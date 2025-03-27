@@ -12,7 +12,7 @@ router.post('/register', validateRequest(registerSchema), authController.registe
 router.post('/login', validateRequest(loginSchema), authController.login);
 router.post('/logout', authController.logout);
 router.get('/me', authMiddleware, authController.getMe);
-router.post('/verify-email/:token', authController.verifyEmail);
+router.get('/verify-email', authController.verifyEmail);
 router.post('/refresh-token', authController.refreshToken);
 
 

@@ -1,8 +1,12 @@
+const jwt = require('jsonwebtoken');
+const { jwtSecret } = require('../config/appConfig');
 const userService = require('../services/userService');
 const authService = require('../services/authService');
-const { hashPassword, comparePassword } = require('../utils/passwordUtils');
+const emailService = require('../services/emailService');
+const { hashPassword } = require('../utils/passwordUtils');
 const { generateToken } = require('../utils/tokenUtils');
 const httpStatus = require('../constants/httpStatus');
+
 
 exports.register = async (req, res) => {
     try {
@@ -17,8 +21,11 @@ exports.register = async (req, res) => {
         const user = await userService.create(nama, email, hashedPassword);
         const token = generateToken({ id: user.user_id, role: user.role });
 
+        const verificationLink = `${process.env.BASE_URL}/auth/verify-email?token=${token}`;
+        await emailService.sendVerificationEmail(user.email, user.nama, verificationLink);
+
         res.status(httpStatus.CREATED).json({
-            message: 'User registered successfully',
+            message: 'Registrasi berhasil. Silakan periksa email anda untuk verifikasi',
             token,
             user: {
                 id: user.user_id,
@@ -96,10 +103,17 @@ exports.getMe = async (req, res) => {
 
 exports.verifyEmail = async (req, res) => {
     try {
+        const { token } = req.query;
+        const decoded = jwt.verify(token, jwtSecret);
 
+        await userService.verifyEmail(decoded.id);
+
+        res.status(httpStatus.OK).json({ message: 'Email berhasil diverifikasi' });
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+        res.status(httpStatus.BAD_REQUEST).json({
+            message: error.message || 'Token tidak valid atau sudah kadaluarsa',
+        });
     }
 };
 

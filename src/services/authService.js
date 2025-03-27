@@ -1,17 +1,21 @@
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
-const { jwtSecret } = require('../config/appConfig');
+const { comparePassword } = require('../utils/passwordUtils');
+const { generateToken } = require('../utils/tokenUtils');
 
 const login = async (email, password) => {
     const user = await User.findByEmail(email);
     if (!user) {
-        throw new Error('Invalid credentials');
+        throw new Error('Alamat Email belum terdaftar di sistem');
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    if (user.isVerified == false) {
+        throw new Error('Email belum terverifikasi');
+    }
+
+    const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
-        throw new Error('Invalid credentials');
+        throw new Error('Email atau password salah');
     }
 
     // Token untuk user yang berhasil login

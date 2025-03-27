@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Your Email - RuangIlmu</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+        }
+        .verify-button {
+            display: inline-block;
+            background-color: #1CB0F6;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .subtle-text {
+            color: #888;
+            font-size: 14px;
+        }
+
+        footer {
+            display: flex;
+            width: 100%;
+            justify-content:space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <h1 style="color: #136078;">Verifikasi Alamat Email</h1>
+
+        <img src="https://i.ibb.co.com/XZWdQ238/logo-ruangilmu.png" alt="logo-ruangilmu" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
+        
+        <div style="background-color: #E6F2FF; padding: 20px; border-radius: 10px; margin: 20px 0;">
+            <p style="color: #333; margin-bottom: 15px;">Halo {{ nama }}, selamat datang di RuangIlmu! Klik tombol di bawah ini untuk memverifikasi email Anda dan mulai perjalanan belajar Anda.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ verificationLink }}" style="display: inline-block; padding: 10px 20px; background-color: #1CB0F6; color: white; border: none; text-decoration: none; border-radius: 5px; cursor: pointer;">
+                    Verifikasi Sekarang
+                </a>
+            </div>
+            
+            <p class="subtle-text" style="text-align: center; color: #666; margin-top: 10px; font-size: 14px;">Tautan ini hanya berlaku selama 1 jam.</p>
+        </div>
+        
+        <p>Jika Anda tidak membuat akun ini, abaikan email ini dengan aman.</p>
+        
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;">
+        
+        <footer style="text-align: center; font-size: 14px; color: #555;">
+            <p>RuangIlmu</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 10px;">
+                <a href="https://linkedin.com/" style="text-decoration: none;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn" style="width: 30px; height: 30px;">
+                </a>
+                <a href="https://instagram.com/" style="text-decoration: none;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" style="width: 30px; height: 30px;">
+                </a>
+                <a href="https://youtube.com/" style="text-decoration: none;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" alt="YouTube" style="width: 30px; height: 30px;">
+                </a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
