@@ -23,7 +23,8 @@ const registerSchema = z.object({
         .string()
         .min(8),
 
-}).refine((data) => data.password === data.confirmPassword, {
+})
+.refine((data) => data.password === data.confirmPassword, {
     message: 'Password dan konfirmasi password harus sama',
     path: ['confirmPassword'],
 });

@@ -2,9 +2,9 @@ const db = require('../db');
 const bcrypt = require('bcrypt');
 
 class User {
-    static async create(nama, email, password){
+    static async create(nama, email, password, role = "user"){
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await db.query('INSERT INTO users (nama, email, password) VALUES ($1, $2, $3) RETURNING user_id, nama, email, created_at', [nama, email, hashedPassword]); 
+        const result = await db.query('INSERT INTO users (nama, email, password, role) VALUES ($1, $2, $3, $4) RETURNING user_id, nama, email, role, created_at', [nama, email, hashedPassword, role]); 
         return result.rows[0];  
     }
 

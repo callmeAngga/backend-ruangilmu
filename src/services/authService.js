@@ -14,8 +14,13 @@ const login = async (email, password) => {
         throw new Error('Invalid credentials');
     }
 
-    const token = jwt.sign({ id: user.user_id }, jwtSecret, { expiresIn: '1d' });
-    return { user, token };
+    // Token untuk user yang berhasil login
+    const accessToken = generateToken({ id: user.user_id, role: user.role });
+
+    // Token untuk refresh token
+    const refreshToken = generateToken({ id: user.user_id }, '7d');
+
+    return { user, accessToken, refreshToken };
 };
 
 const getMe = async (userId) => {

@@ -5,8 +5,10 @@ CREATE TABLE users (
     nama VARCHAR(255) NOT NULL,      
     email VARCHAR(255) NOT NULL UNIQUE, 
     password VARCHAR(255) NOT NULL,
-    tanggal_lahir DATE NOT NULL,     
-    kelas INTEGER CHECK (kelas IN (4, 5, 6)) NOT NULL, 
+    tanggal_lahir DATE,     
+    kelas INTEGER CHECK (kelas IN (4, 5, 6)), 
+    isVerified BOOLEAN DEFAULT FALSE,
+    role VARCHAR(50) CHECK (role IN ('admin', 'user')) DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
