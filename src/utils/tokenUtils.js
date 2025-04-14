@@ -6,7 +6,7 @@ const generateToken = (payload, expiresIn = '1h') => {
 };
 
 const verifyToken = (token) => {
-    return jwt.verify(token, config.jwt.secret);
+    return jwt.verify(token, jwtSecret);
 };
 
 module.exports = {

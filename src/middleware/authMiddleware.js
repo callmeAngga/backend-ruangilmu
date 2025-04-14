@@ -22,14 +22,14 @@ const authMiddleware = async (req, res, next) => {
             } catch (firebaseError) {
                 return res.status(httpStatus.UNAUTHORIZED).json({
                     status: 'error',
-                    message: 'Unauthorized',
+                    message: 'Unauthorized 1',
                 });
             }
         }
     } catch (error) {
         return res.status(httpStatus.UNAUTHORIZED).json({
             status: 'error',
-            message: 'Unauthorized',
+            message: 'Unauthorized 2',
         });
     }
 };

@@ -56,3 +56,13 @@ BEFORE UPDATE ON courses
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column_courses();
 
+-- users_courses_enrollment table
+CREATE TABLE enrollments (
+    enrolment_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+    progress INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+    is_completed BOOLEAN DEFAULT FALSE,
+    enrolment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, course_id)
+);
