@@ -31,6 +31,6 @@ build/
 coverage/
 
 
-./src/config/serviceAccountKey.json
+src/config/serviceAccountKey.json
 
 src/custom/

@@ -75,16 +75,23 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
     try {
-        // Hapus refresh token dari cookies
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-        });
+        const refreshToken = req.cookies?.refreshToken;
 
-        res.status(200).json({ message: 'Logout successful' });
+        if (refreshToken) {
+            // Clear cookie
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict',
+            });
+
+            return res.status(200).json({ message: 'Logout successful' });
+        } else {
+            return res.status(400).json({ message: 'No refresh token found in cookies' });
+        }
+
     } catch (error) {
-        console.error('Logout error:', error);
+        console.error('Logout error:', error.message, error.stack);
         res.status(500).json({ message: 'Server error during logout' });
     }
 };

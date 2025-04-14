@@ -11,20 +11,12 @@ const ROLES = require('../constants/roles');
 router.post('/register', validateRequest(registerSchema), authController.register);
 router.post('/login', validateRequest(loginSchema), authController.login);
 router.post('/oauth-google', authController.oauthGoogle);
-router.post('/logout', authController.logout);
+router.post('/logout', authMiddleware, authController.logout);
 router.get('/verify-email', authController.verifyEmail);
 router.post('/refresh-token', authController.refreshToken);
 
 // router.get('/me', authMiddleware, authController.getMe);
 
-router.get('/dashboard', authMiddleware, roleMiddleware([ROLES.USER]), (req, res) => {
-    res.json({ message: 'Selamat Datang di Dashboard' });
-}
-);
 
-router.get('/dashboard-admin', authMiddleware, roleMiddleware([ROLES.ADMIN]), (req, res) => {
-    res.json({ message: 'Selamat Datang di Dashboard Admin' });
-}
-);
 
 module.exports = router;
