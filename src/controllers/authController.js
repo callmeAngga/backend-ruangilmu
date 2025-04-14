@@ -4,9 +4,8 @@ const userService = require('../services/userService');
 const authService = require('../services/authService');
 const emailService = require('../services/emailService');
 const { hashPassword } = require('../utils/passwordUtils');
-const { generateToken } = require('../utils/tokenUtils');
+const { generateToken, verifyToken } = require('../utils/tokenUtils');
 const httpStatus = require('../constants/httpStatus');
-
 
 exports.register = async (req, res) => {
     try {
@@ -104,7 +103,7 @@ exports.getMe = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
-        const decoded = jwt.verify(token, jwtSecret);
+        const decoded = verifyToken(token, jwtSecret);
 
         await userService.verifyEmail(decoded.id);
 
@@ -124,11 +123,43 @@ exports.refreshToken = async (req, res) => {
             return res.status(httpStatus.UNAUTHORIZED).json({ message: 'Refresh token not provided' });
         }
 
-        const decoded = jwt.verify(refreshToken, jwtSecret);
+        const decoded = verifyToken(refreshToken, jwtSecret);
         const accessToken = generateToken({ id: decoded.id, role: decoded.role }, '1h');
 
         res.status(httpStatus.OK).json({ accessToken });
     } catch (error) {
         return res.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid or expired refresh token' });
+    }
+};
+
+exports.oauthGoogle = async (req, res) => {
+    try {
+        console.log('[DEBUG] Google OAuth request received');
+        const { idToken }= req.body;
+
+        console.log('[DEBUG] ID Token:', idToken);
+        if (!idToken) {
+            return res.status(httpStatus.BAD_REQUEST).json({ message: 'ID token is required' });
+        }
+
+        const { user, accessToken, refreshToken } = await authService.loginFirebase(idToken);
+
+        return res.status(httpStatus.OK).json({
+            message: 'Login successful',
+            accessToken,
+            refreshToken,
+            user: {
+                id: user.user_id,
+                nama: user.nama,
+                email: user.email,
+            },
+        });
+
+    } catch (error) {
+        console.error(error.message);
+        return res.status(httpStatus.UNAUTHORIZED).json({
+            status: 'error',
+            message: error.message
+        });
     }
 };

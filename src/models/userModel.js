@@ -1,18 +1,17 @@
 const db = require('../db');
-const bcrypt = require('bcrypt');
 
 class User {
-    static async create(nama, email, password, role = "user"){
-        const result = await db.query('INSERT INTO users (nama, email, password, role) VALUES ($1, $2, $3, $4) RETURNING user_id, nama, email, role, created_at', [nama, email, password, role]); 
-        return result.rows[0];  
+    static async create(nama, email, password, role = "user", isVerified = false) {
+        const result = await db.query('INSERT INTO users (nama, email, password, role, isVerified) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, nama, email, role, isVerified, created_at', [nama, email, password, role, isVerified]);
+        return result.rows[0];
     }
 
-    static async findByEmail(email){
+    static async findByEmail(email) {
         const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         return result.rows[0];
     }
 
-    static async findById(id){
+    static async findById(id) {
         const result = await db.query('SELECT * FROM users WHERE user_id = $1', [id]);
         return result.rows[0];
     }
@@ -24,7 +23,19 @@ class User {
         );
         return result.rows[0];
     }
-    
+
+    static async updateFirebaseUid(userId, firebaseUid) {
+        const result = await db.query(
+            'UPDATE users SET firebase_uid = $1 WHERE user_id = $2 RETURNING *',
+            [firebaseUid, userId]
+        );
+        return result.rows[0];
+    }
+
+    static async findByFirebaseUid(firebaseUid) {
+        const result = await db.query('SELECT * FROM users WHERE firebase_uid = $1', [firebaseUid]);
+        return result.rows[0];
+    }
 }
 
 module.exports = User;

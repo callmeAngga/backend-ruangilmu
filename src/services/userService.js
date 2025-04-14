@@ -27,4 +27,5 @@ const verifyEmail = async (userId) => {
     return updatedUser;
 };
 
+
 module.exports = { findByEmail, findById, create, verifyEmail };

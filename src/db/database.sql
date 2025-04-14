@@ -10,7 +10,8 @@ CREATE TABLE users (
     isVerified BOOLEAN DEFAULT FALSE,
     role VARCHAR(50) CHECK (role IN ('admin', 'user')) DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    firebase_uid VARCHAR(255) UNIQUE 
 );
 
 -- Trigger to update updated_at column when row is updated
@@ -27,4 +28,31 @@ CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
+
+-- courses table
+
+CREATE TABLE courses (
+    course_id SERIAL PRIMARY KEY,
+    course_name VARCHAR(255) NOT NULL,
+    course_description TEXT NOT NULL,
+    course_image_profile VARCHAR(255) NOT NULL,
+    course_image_cover VARCHAR(255) NOT NULL,
+    course_price DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Trigger to update updated_at column when row is updated
+
+CREATE OR REPLACE FUNCTION update_updated_at_column_courses()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER set_updated_at_courses
+BEFORE UPDATE ON courses
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column_courses();
 

@@ -39,4 +39,8 @@ const loginSchema = z.object({
         .min(8),
 });
 
+const googleAuthSchema = z.object({
+    idToken: z.string().nonempty({ message: 'ID token tidak boleh kosong' }),
+});
+
 module.exports = { registerSchema, loginSchema };

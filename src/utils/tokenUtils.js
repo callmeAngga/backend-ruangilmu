@@ -5,7 +5,11 @@ const generateToken = (payload, expiresIn = '1h') => {
     return jwt.sign(payload, jwtSecret, { expiresIn });
 };
 
-module.exports = {
-    generateToken
+const verifyToken = (token) => {
+    return jwt.verify(token, config.jwt.secret);
 };
 
+module.exports = {
+    generateToken,
+    verifyToken
+};
