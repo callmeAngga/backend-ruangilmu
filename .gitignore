@@ -30,3 +30,7 @@ build/
 # Coverage files (testing)
 coverage/
 
+
+src/config/serviceAccountKey.json
+
+src/custom/

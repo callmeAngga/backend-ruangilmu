@@ -1,17 +1,37 @@
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/appConfig');
 const httpStatus = require('../constants/httpStatus');
+const admin = require('../config/firebaseConfig');
+const { verifyToken } = require('../utils/tokenUtils');
 
-module.exports = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     try {
-        const token = req.header('Authoriation').replace('Bearer ', '');
-        const decoded = jwt.verify(token, jwtSecret);
-        req.user = decoded;
-        next();
+        const token = req.header('Authorization').replace('Bearer ', '');
+
+        // Coba verifikasi token lokal
+        try {
+            const decoded = verifyToken(token, jwtSecret);
+            req.user = decoded;
+            return next();
+        } catch (localError) {
+            // Jika gagal, verifikasi dengan Firebase
+            try {
+                const decodedFirebaseToken = await admin.auth().verifyIdToken(token);
+                req.user = decodedFirebaseToken;
+                return next();
+            } catch (firebaseError) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    status: 'error',
+                    message: 'Unauthorized 1',
+                });
+            }
+        }
     } catch (error) {
         return res.status(httpStatus.UNAUTHORIZED).json({
             status: 'error',
-            message: 'Unauthorized'
+            message: 'Unauthorized 2',
         });
     }
 };
+
+module.exports = authMiddleware;
