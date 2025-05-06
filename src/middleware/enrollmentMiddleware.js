@@ -4,6 +4,13 @@ const courseService = require('../services/courseService');
 // Middleware untuk memastikan user sudah enroll di course sebelum memberikan review
 const checkEnrollment = async (req, res, next) => {
     try {
+        if (!req.user) {
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                status: 'error',
+                message: 'Anda harus login terlebih dahulu'
+            });
+        }
+
         const user_id = req.user.id;
         const course_id = parseInt(req.body.course_id) || parseInt(req.params.courseId);
         
@@ -11,6 +18,14 @@ const checkEnrollment = async (req, res, next) => {
             return res.status(httpStatus.BAD_REQUEST).json({
                 status: 'error',
                 message: 'Course ID tidak valid'
+            });
+        }
+
+        const course = await courseService.getCourseById(course_id);
+        if (!course) {
+            return res.status(httpStatus.NOT_FOUND).json({
+                status: 'error',
+                message: 'Course tidak ditemukan'
             });
         }
         
@@ -34,6 +49,4 @@ const checkEnrollment = async (req, res, next) => {
     }
 };
 
-module.exports = {
-    checkEnrollment
-};
+module.exports = checkEnrollment
