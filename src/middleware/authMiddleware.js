@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/appConfig');
 const httpStatus = require('../constants/httpStatus');
 const admin = require('../config/firebaseConfig');
@@ -7,14 +6,17 @@ const { verifyToken } = require('../utils/tokenUtils');
 const authMiddleware = async (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '');
-
-        // Coba verifikasi token lokal
+        if (!token) {
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                status: 'error',
+                message: 'Token tidak ditemukan',
+            });
+        }
         try {
             const decoded = verifyToken(token, jwtSecret);
             req.user = decoded;
             return next();
         } catch (localError) {
-            // Jika gagal, verifikasi dengan Firebase
             try {
                 const decodedFirebaseToken = await admin.auth().verifyIdToken(token);
                 req.user = decodedFirebaseToken;
@@ -22,14 +24,14 @@ const authMiddleware = async (req, res, next) => {
             } catch (firebaseError) {
                 return res.status(httpStatus.UNAUTHORIZED).json({
                     status: 'error',
-                    message: 'Unauthorized 1',
+                    message: 'Firebase token tidak valid',
                 });
             }
         }
     } catch (error) {
         return res.status(httpStatus.UNAUTHORIZED).json({
             status: 'error',
-            message: 'Unauthorized 2',
+            message: 'Token tidak valid atau sudah kadaluarsa',
         });
     }
 };

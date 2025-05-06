@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../config/appConfig');
 const userService = require('../services/userService');
 const authService = require('../services/authService');
@@ -51,12 +50,25 @@ exports.login = async (req, res) => {
         });
 
         // Simpan token di cookies
+        // res.cookie('refreshToken', refreshToken, {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: 'strict',
+        //     maxAge: 3 * 24 * 60 * 60 * 1000,
+        // });
+
+        // res.cookie('refreshToken')
+
+        // Simpan token di cookies (untuk pengujian lokal)
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
+            secure: false, 
+            sameSite: 'Lax', 
             maxAge: 3 * 24 * 60 * 60 * 1000,
+            path: '/'
         });
+
+        res.header('Access-Control-Allow-Credentials', 'true')
 
         res.status(httpStatus.OK).json({
             message: 'Login successful',
@@ -96,17 +108,6 @@ exports.logout = (req, res) => {
     }
 };
 
-
-exports.getMe = async (req, res) => {
-    try {
-        const user = await authService.getMe(req.user.id);
-        res.status(httpStatus.OK).json({ user });
-    } catch (error) {
-        console.error(error.message);
-        res.status(httpStatus.NOT_FOUND).json({ message: error.message });
-    }
-};
-
 exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
@@ -114,11 +115,39 @@ exports.verifyEmail = async (req, res) => {
 
         await userService.verifyEmail(decoded.id);
 
-        res.status(httpStatus.OK).json({ message: 'Email berhasil diverifikasi' });
+        // res.status(httpStatus.OK).json({ message: 'Email berhasil diverifikasi' });
+        return res.redirect('http://127.0.0.1:5500/login.html?message=Email berhasil diverifikasi, silakan login');
     } catch (error) {
         console.error(error.message);
         res.status(httpStatus.BAD_REQUEST).json({
             message: error.message || 'Token tidak valid atau sudah kadaluarsa',
+        });
+        return res.redirect('http://127.0.0.1:5500/login.html?error=Token tidak valid atau sudah kadaluarsa');
+    }
+};
+
+exports.resendVerificationEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                status: 'error',
+                message: 'Email harus diisi'
+            });
+        }
+        
+        const result = await emailService.resendVerificationEmail(email);
+
+        res.status(httpStatus.OK).json({
+            status: 'success',
+            message: result.message
+        });
+    } catch (error) {
+        console.error(error.message);
+        res.status(httpStatus.BAD_REQUEST).json({
+            status: 'error',
+            message: error.message
         });
     }
 };
@@ -141,10 +170,8 @@ exports.refreshToken = async (req, res) => {
 
 exports.oauthGoogle = async (req, res) => {
     try {
-        console.log('[DEBUG] Google OAuth request received');
         const { idToken }= req.body;
 
-        console.log('[DEBUG] ID Token:', idToken);
         if (!idToken) {
             return res.status(httpStatus.BAD_REQUEST).json({ message: 'ID token is required' });
         }
@@ -165,6 +192,65 @@ exports.oauthGoogle = async (req, res) => {
     } catch (error) {
         console.error(error.message);
         return res.status(httpStatus.UNAUTHORIZED).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+};
+
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                status: 'error',
+                message: 'Email harus diisi'
+            });
+        }
+        
+        const result = await userService.requestPasswordReset(email);
+        
+        res.status(httpStatus.OK).json({
+            status: 'success',
+            message: result.message
+        });
+    } catch (error) {
+        console.error(error.message);
+        res.status(httpStatus.BAD_REQUEST).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        
+        if (!token || !newPassword) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                status: 'error',
+                message: 'Token dan password baru harus diisi'
+            });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                status: 'error',
+                message: 'Password minimal 6 karakter'
+            });
+        }
+        
+        const result = await userService.resetPassword(token, newPassword);
+        
+        res.status(httpStatus.OK).json({
+            status: 'success',
+            message: result.message
+        });
+    } catch (error) {
+        console.error(error.message);
+        res.status(httpStatus.BAD_REQUEST).json({
             status: 'error',
             message: error.message
         });

@@ -3,7 +3,6 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validateRequestMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
 const { registerSchema, loginSchema, googleAuthSchema } = require('../validators/authValidator');
 const ROLES = require('../constants/roles');
 
@@ -15,8 +14,8 @@ router.post('/logout', authMiddleware, authController.logout);
 router.get('/verify-email', authController.verifyEmail);
 router.post('/refresh-token', authController.refreshToken);
 
-// router.get('/me', authMiddleware, authController.getMe);
-
-
+router.post('/resend-verification', authController.resendVerificationEmail);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 
 module.exports = router;
