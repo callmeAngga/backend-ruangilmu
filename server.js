@@ -3,6 +3,8 @@ const { port } = require('./src/config/appConfig');
 const authRoutes = require('./src/routes/authRoutes');
 const courseRoutes = require('./src/routes/courseRoutes');
 const userRoutes = require('./src/routes/userRoutes');
+const reviewRoutes = require('./src/routes/reviewRoutes');
+const moduleRoutes = require('./src/routes/moduleRoutes');
 const app = express();
 const cors = require('cors');
 const path = require('path');
@@ -24,7 +26,9 @@ app.use(express.json());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/courses', courseRoutes);
-app.use('/user', userRoutes)
+app.use('/user', userRoutes);
+app.use('/review', reviewRoutes);
+app.use('/module', moduleRoutes); 
 
 app.use('/src/uploads/courses', express.static(path.join(__dirname, 'src/uploads/courses'))); 
 

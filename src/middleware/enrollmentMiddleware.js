@@ -49,6 +49,4 @@ const checkEnrollment = async (req, res, next) => {
     }
 };
 
-module.exports = {
-    checkEnrollment
-};
+module.exports = checkEnrollment
