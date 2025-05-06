@@ -11,6 +11,25 @@ class User {
         return result.rows[0];
     }
 
+    static async updateProfile(userId, data) {
+        const allowedFields = ['nama', 'email', 'tanggal_lahir', 'kelas'];
+        const updates = Object.entries(data)
+            .filter(([key]) => allowedFields.includes(key))
+            .map(([key, value]) => `${key} = '${value}'`);
+        
+        if (updates.length === 0) return null;
+        
+        const query = `
+            UPDATE users 
+            SET ${updates.join(', ')}, updated_at = NOW() 
+            WHERE user_id = $1 
+            RETURNING user_id, nama, email, tanggal_lahir, 'kelas', created_at, updated_at
+        `;
+        
+        const result = await db.query(query, [userId]);
+        return result.rows[0];
+    }
+
     static async findById(id) {
         const result = await db.query('SELECT * FROM users WHERE user_id = $1', [id]);
         return result.rows[0];
@@ -26,7 +45,7 @@ class User {
 
     static async updateFirebaseUid(userId, firebaseUid) {
         const result = await db.query(
-            'UPDATE users SET firebase_uid = $1 WHERE user_id = $2 RETURNING *',
+            'UPDATE users SET firebase_uid = $1, isverified = true WHERE user_id = $2 RETURNING *',
             [firebaseUid, userId]
         );
         return result.rows[0];
@@ -34,6 +53,14 @@ class User {
 
     static async findByFirebaseUid(firebaseUid) {
         const result = await db.query('SELECT * FROM users WHERE firebase_uid = $1', [firebaseUid]);
+        return result.rows[0];
+    }
+
+    static async updatePassword(userId, newPassword) {
+        const result = await db.query(
+            'UPDATE users SET password = $1 WHERE user_id = $2 RETURNING user_id',
+            [newPassword, userId]
+        );
         return result.rows[0];
     }
 }
