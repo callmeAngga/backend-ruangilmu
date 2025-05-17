@@ -8,7 +8,7 @@ const enrollmentMiddleware = require('../middleware/enrollmentMiddleware');
 router.post('/', authMiddleware, enrollmentMiddleware, reviewController.createReview);
 
 // Endpoint untuk mendapatkan review tertentu berdasarkan course
-router.get('/course/:courseId', authMiddleware. reviewController.getReviewsByCourse);
+router.get('/course/:courseId', authMiddleware, reviewController.getReviewsByCourse);
 
 // Endpoint untuk mendapatkan review dari user yang sedang login untuk course tertentu
 router.get('/user/course/:courseId', authMiddleware, enrollmentMiddleware, reviewController.getUserReviewForCourse);

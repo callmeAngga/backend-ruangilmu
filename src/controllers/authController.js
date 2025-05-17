@@ -56,46 +56,75 @@ exports.login = async (req, res) => {
         const { email, password } = req.body;
         const { user, accessToken, refreshToken } = await authService.login(email, password);
 
+        const isProduction = process.env.NODE_ENV === 'production';
+
         // Hapus refresh token lama dari cookies (jika ada)
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-        });
-
-        // Simpan token di cookies
-        // res.cookie('refreshToken', refreshToken, {
-        //     httpOnly: true,
-        //     secure: true,
-        //     sameSite: 'strict',
-        //     maxAge: 3 * 24 * 60 * 60 * 1000,
-        // });
-
-        // res.cookie('refreshToken')
-
-        // Simpan token di cookies (untuk pengujian lokal)
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: false,
-            sameSite: 'Lax',
-            maxAge: 3 * 24 * 60 * 60 * 1000,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
             path: '/'
         });
 
-        res.header('Access-Control-Allow-Credentials', 'true')
-
-        res.status(httpStatus.OK).json({
-            message: 'Login successful',
-            accessToken,
-            user: {
-                id: user.user_id,
-                nama: user.nama,
-                email: user.email,
-            },
+        // Set cookie untuk refresh token dengan konfigurasi berdasarkan environment
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
+            domain: isProduction ? process.env.COOKIE_DOMAIN : undefined
         });
+
+        // Set headers untuk CORS
+        res.header('Access-Control-Allow-Credentials', 'true');
+
+        return successResponse(
+            res,
+            httpStatus.OK,
+            'Login berhasil',
+            {
+                user: {
+                    id: user.user_id,
+                    nama: user.nama,
+                    email: user.email,
+                    createdAt: user.created_at,
+                    isVerified: user.is_verified,
+                },
+                auth: {
+                    accessToken,
+                    tokenType: "Bearer",
+                    expiresIn: 3600,
+                },
+            }
+        );
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.UNAUTHORIZED).json({ message: error.message });
+
+        if (error.message === 'Alamat Email belum terdaftar di sistem') {
+            return failResponse(
+                res,
+                httpStatus.NOT_FOUND,
+                'Email tidak ditemukan',
+                [{ field: 'email', message: error.message }],
+            );
+        } else if (error.message === 'Email belum terverifikasi') {
+            return failResponse(
+                res,
+                httpStatus.UNAUTHORIZED,
+                'Email belum terverifikasi',
+                [{ field: 'email', message: error.message }],
+            );
+        } else if (error.message === 'Password yang anda masukkan salah') {
+            return failResponse(
+                res,
+                httpStatus.UNAUTHORIZED,
+                'Kredensial tidak valid',
+                [{ field: 'password', message: error.message }],
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 

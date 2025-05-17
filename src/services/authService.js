@@ -17,7 +17,7 @@ const login = async (email, password) => {
 
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
-        throw new Error('Email atau password salah');
+        throw new Error('Password yang anda masukkan salah');
     }
 
     // Token untuk user yang berhasil login
