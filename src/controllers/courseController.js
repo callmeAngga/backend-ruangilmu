@@ -95,7 +95,7 @@ exports.enrollCourse = async (req, res) => {
                 errors.push({ field: 'user_id', message: 'User ID tidak boleh kosong'});
             }
 
-            throw new AppError('Gagal mendaftar di course', httpStatus.BAD_REQUEST, 'enrollment', errors);
+            throw new AppError('Gagal mendaftar di course', httpStatus.BAD_REQUEST, null, errors);
         }
 
         const course = await courseService.getCourseById(course_id);
@@ -172,7 +172,7 @@ exports.checkEnrollmentStatus = async (req, res) => {
                 errors.push({ field: 'user_id', message: 'User ID tidak boleh kosong'});
             }
 
-            throw new AppError('Gagal mengecek status enrollment', httpStatus.BAD_REQUEST, 'enrollment', errors);
+            throw new AppError('Gagal mengecek status enrollment', httpStatus.BAD_REQUEST, null, errors);
         }
 
         const course = await courseService.getCourseById(course_id);

@@ -1,51 +1,44 @@
 const httpStatus = require('../constants/httpStatus');
 const courseService = require('../services/courseService');
+const AppError = require('../utils/appError');
+const { errorResponse, failResponse } = require('../utils/responseUtil');
 
-// Middleware untuk memastikan user sudah enroll di course sebelum memberikan review
 const checkEnrollment = async (req, res, next) => {
     try {
-        if (!req.user) {
-            return res.status(httpStatus.UNAUTHORIZED).json({
-                status: 'error',
-                message: 'Anda harus login terlebih dahulu'
-            });
+        const user_id = req.user.id;
+        if (!user_id) {
+            throw new AppError('User tidak terautentikasi, silakan login terlebih dahulu', httpStatus.UNAUTHORIZED, 'user');
         }
 
-        const user_id = req.user.id;
-        const course_id = parseInt(req.body.course_id) || parseInt(req.params.courseId);
-        
+        const course_id = parseInt(req.body.course_id);
         if (!course_id) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: 'Course ID tidak valid'
-            });
+            throw new AppError('Course ID tidak ditemukan', httpStatus.BAD_REQUEST, 'course');
         }
 
         const course = await courseService.getCourseById(course_id);
         if (!course) {
-            return res.status(httpStatus.NOT_FOUND).json({
-                status: 'error',
-                message: 'Course tidak ditemukan'
-            });
+            throw new AppError(`Tidak ditemukan course dengan id ${course_id}`, httpStatus.NOT_FOUND, 'course');
         }
-        
-        // Periksa apakah user sudah enroll
+
         const isEnrolled = await courseService.checkEnrollmentStatus(user_id, course_id);
-        
         if (!isEnrolled) {
-            return res.status(httpStatus.FORBIDDEN).json({
-                status: 'error',
-                message: 'Anda harus terdaftar dalam course ini untuk memberikan review'
-            });
+            throw new AppError('Anda harus terdaftar dalam course ini untuk memberikan review', httpStatus.FORBIDDEN, 'enrollment');
         }
-        
+
         next();
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Terjadi kesalahan saat verifikasi enrollment'
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, "Proses gagal", [
+                {
+                    field: error.field,
+                    message: error.message
+                }
+            ]
+            );
+        }
+        return errorResponse(res)
     }
 };
 

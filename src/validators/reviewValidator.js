@@ -1,61 +1,18 @@
 const zod = require('zod');
 
-// Schema untuk validasi create review
-const createReviewSchema = zod.object({
-    course_id: zod.number({
-        required_error: "Course ID harus diisi",
-        invalid_type_error: "Course ID harus berupa angka"
-    }).int().positive("Course ID harus bilangan bulat positif"),
-    
-    content: zod.string({
-        required_error: "Konten review harus diisi",
-        invalid_type_error: "Konten review harus berupa string"
-    }).min(5, "Review minimal 5 karakter").max(1000, "Review maksimal 1000 karakter")
+const { z } = require('zod')
+
+const reviewContentSchema = zod.object({
+    content: z
+        .string()
+        .min(3, { message: "Review minimal 3 karakter"})
+        .max(1000, { message: "Review maksimal 1000 karakter"})
+        .regex(
+            /^[A-Za-z0-9.,!?()'" -]+$/,
+            {message: "Hanya huruf, angka, spasi, dan tanda baca standar (.,!?()'\"-) yang diperbolehkan. Emoji, simbol khusus, dan huruf non-Latin tidak diizinkan."}
+        )
 });
-
-// Schema untuk validasi update review
-const updateReviewSchema = zod.object({
-    content: zod.string({
-        required_error: "Konten review harus diisi",
-        invalid_type_error: "Konten review harus berupa string"
-    }).min(5, "Review minimal 5 karakter").max(1000, "Review maksimal 1000 karakter")
-});
-
-const validateCreateReview = (data) => {
-    try {
-        createReviewSchema.parse(data);
-        return { error: null };
-    } catch (error) {
-        return {
-            error: {
-                details: [
-                    {
-                        message: error.errors[0].message
-                    }
-                ]
-            }
-        };
-    }
-};
-
-const validateUpdateReview = (data) => {
-    try {
-        updateReviewSchema.parse(data);
-        return { error: null };
-    } catch (error) {
-        return {
-            error: {
-                details: [
-                    {
-                        message: error.errors[0].message
-                    }
-                ]
-            }
-        };
-    }
-};
 
 module.exports = {
-    validateCreateReview,
-    validateUpdateReview
+    reviewContentSchema
 };

@@ -1,32 +1,27 @@
 const Review = require('../models/reviewModel');
 const Course = require('../models/courseModel');
+const AppError = require('../utils/appError');
+const httpStatus = require('../constants/httpStatus');
 
 const createReview = async (user_id, course_id, content) => {
-    // Verifikasi bahwa user sudah enroll ke course
     const isEnrolled = await Course.checkUserEnrollment(user_id, course_id);
     if (!isEnrolled) {
-        throw new Error('Anda harus terdaftar dalam course ini untuk memberikan review');
+        throw new AppError('Anda harus terdaftar dalam course ini untuk memberikan review', httpStatus.FORBIDDEN, 'enrollment');
     }
 
-    // Cek apakah user sudah memberikan review sebelumnya
     const hasReviewed = await Review.checkUserReviewExists(user_id, course_id);
     if (hasReviewed) {
-        throw new Error('Anda sudah memberikan review untuk course ini');
+        throw new AppError('Anda sudah memberikan review untuk course ini', httpStatus.BAD_REQUEST, 'review');
     }
 
-    // Buat review baru
     const review = await Review.createReview(user_id, course_id, content);
-    
-    // Di sini nanti akan diintegrasikan dengan model AI untuk analisis sentiment
-    // Akan diimplementasikan pada tahap berikutnya
-
     return review;
 };
 
 const getReviewById = async (review_id) => {
     const review = await Review.getReviewById(review_id);
     if (!review) {
-        throw new Error('Review tidak ditemukan');
+        throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
     }
     return review;
 };
@@ -40,37 +35,29 @@ const getReviewsByCourseId = async (course_id) => {
 };
 
 const updateReview = async (review_id, user_id, content) => {
-    // Verifikasi bahwa review ada dan milik user tersebut
     const review = await Review.getReviewById(review_id);
     if (!review) {
-        throw new Error('Review tidak ditemukan');
+        throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
     }
-    
+
     if (review.user_id !== user_id) {
-        throw new Error('Anda tidak memiliki izin untuk mengedit review ini');
+        throw new AppError('Anda tidak memiliki izin untuk mengedit review ini', httpStatus.FORBIDDEN, 'permission');
     }
 
-    // Update review
     const updatedReview = await Review.updateReview(review_id, content);
-    
-    // Reset sentiment saat review diupdate
-    // Analisis sentiment akan dilakukan lagi nanti
-
     return updatedReview;
 };
 
 const deleteReview = async (review_id, user_id) => {
-    // Verifikasi bahwa review ada dan milik user tersebut
     const review = await Review.getReviewById(review_id);
     if (!review) {
-        throw new Error('Review tidak ditemukan');
-    }
-    
-    if (review.user_id !== user_id) {
-        throw new Error('Anda tidak memiliki izin untuk menghapus review ini');
+        throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
     }
 
-    // Hapus review
+    if (review.user_id !== user_id) {
+        throw new AppError('Anda tidak memiliki izin untuk menghapus review ini', httpStatus.FORBIDDEN, 'permission');
+    }
+
     await Review.deleteReview(review_id);
     return true;
 };
@@ -82,36 +69,36 @@ const getUserReviewForCourse = async (user_id, course_id) => {
 const analyzeSentiment = async (review_id) => {
     // Fungsi ini akan diimplementasikan nanti untuk integrasi dengan model AI
     // Placeholder untuk saat ini
-    
+
     const review = await Review.getReviewById(review_id);
     if (!review) {
-        throw new Error('Review tidak ditemukan');
+        throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
     }
 
     // Contoh sederhana untuk analisis sentiment, kedepannya akan diganti dengan model AI
     let sentiment = 'netral';
     const text = review.content.toLowerCase();
-    
+
     const positiveWords = ['bagus', 'baik', 'suka', 'hebat', 'keren', 'mantap', 'memuaskan'];
     const negativeWords = ['buruk', 'jelek', 'tidak suka', 'kecewa', 'kurang', 'sulit'];
-    
+
     let positiveCount = 0;
     let negativeCount = 0;
-    
+
     positiveWords.forEach(word => {
         if (text.includes(word)) positiveCount++;
     });
-    
+
     negativeWords.forEach(word => {
         if (text.includes(word)) negativeCount++;
     });
-    
+
     if (positiveCount > negativeCount) sentiment = 'positif';
     else if (negativeCount > positiveCount) sentiment = 'negatif';
-    
+
     // Update sentiment pada review
     await Review.updateSentiment(review_id, sentiment);
-    
+
     return sentiment;
 };
 
