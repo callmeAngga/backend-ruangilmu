@@ -39,8 +39,24 @@ const loginSchema = z.object({
         .min(8),
 });
 
+const resetPasswordSchema = z.object({
+    password: z
+        .string()
+        .min(8, { message: 'Password minimal 8 karakter' })
+        .max(20, { message: 'Password maksimal 20 karakter' })
+        .regex(/[A-Z]/, { message: 'Password harus mengandung minimal 1 huruf besar' })
+        .regex(/[a-z]/, { message: 'Password harus mengandung minimal 1 huruf kecil' })
+        .regex(/[0-9]/, { message: 'Password harus mengandung minimal 1 angka' }),
+
+    confirmPassword: z.string().min(8),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'Password dan konfirmasi password harus sama',
+    path: ['confirmPassword'],
+});
+
+
 const googleAuthSchema = z.object({
     idToken: z.string().nonempty({ message: 'ID token tidak boleh kosong' }),
 });
 
-module.exports = { registerSchema, loginSchema };
+module.exports = { registerSchema, loginSchema, resetPasswordSchema };

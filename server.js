@@ -24,7 +24,8 @@ app.use(cors({
 // Middleware
 app.use(express.json());
 
-
+// Middleware for parsing URL-encoded data
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes

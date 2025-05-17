@@ -3,7 +3,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 const validateRequest = require('../middleware/validateRequestMiddleware');
-const { registerSchema, loginSchema, googleAuthSchema } = require('../validators/authValidator');
+const { registerSchema, loginSchema, googleAuthSchema, resetPasswordSchema } = require('../validators/authValidator');
 const ROLES = require('../constants/roles');
 
 
@@ -16,6 +16,6 @@ router.post('/refresh-token', authController.refreshToken);
 
 router.post('/resend-verification', authController.resendVerificationEmail);
 router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+router.post('/reset-password', validateRequest(resetPasswordSchema), authController.resetPassword);
 
 module.exports = router;

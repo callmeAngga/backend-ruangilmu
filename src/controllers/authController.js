@@ -1,4 +1,4 @@
-const { jwtSecret, isProduction } = require('../config/appConfig');
+const { isProduction, frontendUrl } = require('../config/appConfig');
 const userService = require('../services/userService');
 const authService = require('../services/authService');
 const emailService = require('../services/emailService');
@@ -6,6 +6,7 @@ const { hashPassword } = require('../utils/passwordUtils');
 const { generateToken, verifyToken } = require('../utils/tokenUtils');
 const httpStatus = require('../constants/httpStatus');
 const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
+const AppError = require('../utils/appError')
 
 exports.register = async (req, res) => {
     try {
@@ -13,15 +14,7 @@ exports.register = async (req, res) => {
 
         const existingUser = await userService.findByEmail(email);
         if (existingUser) {
-            return failResponse(
-                res,
-                httpStatus.BAD_REQUEST,
-                'Email sudah terdaftar',
-                [{
-                    field: 'email',
-                    message: `Email ${email} sudah terdaftar di sistem Ruang Ilmu`
-                }
-            ]);
+            throw new AppError(`Email ${email} sudah terdaftar di sistem Ruang Ilmu`, httpStatus.BAD_REQUEST, 'email');
         }
 
         const hashedPassword = await hashPassword(password);
@@ -47,6 +40,15 @@ exports.register = async (req, res) => {
         );
     } catch (error) {
         console.error(error);
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, 'Registrasi gagal', [
+                {
+                    field: error.field,
+                    message: error.message
+                }
+            ]);
+        }
         return errorResponse(res);
     }
 };
@@ -99,27 +101,13 @@ exports.login = async (req, res) => {
     } catch (error) {
         console.error(error.message);
 
-        if (error.message === 'Alamat Email belum terdaftar di sistem') {
-            return failResponse(
-                res,
-                httpStatus.NOT_FOUND,
-                'Email tidak ditemukan',
-                [{ field: 'email', message: error.message }],
-            );
-        } else if (error.message === 'Email belum terverifikasi') {
-            return failResponse(
-                res,
-                httpStatus.UNAUTHORIZED,
-                'Email belum terverifikasi',
-                [{ field: 'email', message: error.message }],
-            );
-        } else if (error.message === 'Password yang anda masukkan salah') {
-            return failResponse(
-                res,
-                httpStatus.UNAUTHORIZED,
-                'Kredensial tidak valid',
-                [{ field: 'password', message: error.message }],
-            );
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, 'Login gagal, periksa kembali data yang Anda masukkan.', [
+                {
+                    field: error.field,
+                    message: error.message
+                }
+            ]);
         }
 
         return errorResponse(res);
@@ -164,17 +152,23 @@ exports.logout = (req, res) => {
 exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
-        const decoded = verifyToken(token, jwtSecret);
+
+        if (!token) {
+            const message = 'Token verifikasi tidak ditemukan';
+            return res.redirect(`${frontendUrl}/login?verified=false&error=${encodeURIComponent(message)}`);
+        }
+
+        const decoded = verifyToken(token);
+        if (!decoded || !decoded.id) {
+            const message = 'Token verifikasi tidak valid';
+            return res.redirect(`${frontendUrl}/login?verified=false&error=${encodeURIComponent(message)}`);
+        }
 
         await userService.verifyEmail(decoded.id);
-
-        return res.redirect('http://127.0.0.1:5500/login.html?message=Email berhasil diverifikasi, silakan login');
+        return res.redirect(`${frontendUrl}/login?verified=true&message=${encodeURIComponent('Email berhasil diverifikasi, silakan login')}`);
     } catch (error) {
-        console.error(error.message);
-        res.status(httpStatus.BAD_REQUEST).json({
-            message: error.message || 'Token tidak valid atau sudah kadaluarsa',
-        });
-        return res.redirect('http://127.0.0.1:5500/login.html?error=Token tidak valid atau sudah kadaluarsa');
+        console.error('[VerifyEmail Error]', error.message);
+        return res.redirect(`${frontendUrl}/login?verified=false&error=${encodeURIComponent(error.message || 'Token tidak valid atau sudah kadaluarsa')}`);
     }
 };
 
@@ -183,40 +177,89 @@ exports.resendVerificationEmail = async (req, res) => {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: 'Email harus diisi'
-            });
+            throw new AppError('Email harus diisi', httpStatus.BAD_REQUEST, 'email');
         }
 
         const result = await emailService.resendVerificationEmail(email);
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            message: result.message
-        });
+        return successResponse(
+            res,
+            httpStatus.OK,
+            result.message || 'Email verifikasi telah dikirim ulang',
+            null,
+        );
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.BAD_REQUEST).json({
-            status: 'error',
-            message: error.message
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                'Gagal mengirim ulang email verifikasi',
+                [{ field: error.field || 'email', message: error.message }],
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
 exports.refreshToken = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies?.refreshToken;
+
         if (!refreshToken) {
-            return res.status(httpStatus.UNAUTHORIZED).json({ message: 'Refresh token not provided' });
+            throw new AppError('Refresh token tidak ditemukan', httpStatus.UNAUTHORIZED, 'refreshToken');
         }
 
-        const decoded = verifyToken(refreshToken, jwtSecret);
-        const accessToken = generateToken({ id: decoded.id, role: decoded.role }, '1h');
+        let decoded;
+        try {
+            decoded = verifyToken(refreshToken);
+        } catch (err) {
+            // Hapus invalid cookie
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax',
+                path: '/',
+                domain: isProduction ? process.env.COOKIE_DOMAIN : undefined
+            });
 
-        res.status(httpStatus.OK).json({ accessToken });
+            throw new AppError('Token tidak valid atau kadaluarsa', httpStatus.UNAUTHORIZED, 'refreshToken');
+        }
+
+        const user = await userService.findById(decoded.id);
+        if (!user) {
+            throw new AppError('User tidak ditemukan', httpStatus.UNAUTHORIZED, 'user');
+        }
+
+        const accessToken = generateToken({ id: decoded.id, role: decoded.role });
+
+        return successResponse(
+            res,
+            httpStatus.OK,
+            'Token berhasil diperbarui',
+            {
+                auth: {
+                    accessToken,
+                    tokenType: "Bearer",
+                    expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRATION_SECONDS) || 3600
+                }
+            },
+        );
     } catch (error) {
-        return res.status(httpStatus.UNAUTHORIZED).json({ message: 'Invalid or expired refresh token' });
+        console.error(error.message || error);
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                'Authentication gagal',
+                [{ field: error.field || 'auth', message: error.message }],
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
@@ -225,28 +268,56 @@ exports.oauthGoogle = async (req, res) => {
         const { idToken } = req.body;
 
         if (!idToken) {
-            return res.status(httpStatus.BAD_REQUEST).json({ message: 'ID token is required' });
+            throw new AppError('ID Token diperlukan', httpStatus.BAD_REQUEST, 'idToken');
         }
 
         const { user, accessToken, refreshToken } = await authService.loginFirebase(idToken);
 
-        return res.status(httpStatus.OK).json({
-            message: 'Login successful',
-            accessToken,
-            refreshToken,
-            user: {
-                id: user.user_id,
-                nama: user.nama,
-                email: user.email,
-            },
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
+            domain: isProduction ? process.env.COOKIE_DOMAIN : undefined
         });
+
+        // Set headers untuk CORS
+        res.header('Access-Control-Allow-Credentials', 'true');
+
+        return successResponse(
+            res,
+            httpStatus.OK,
+            'Login dengan Google berhasil',
+            {
+                user: {
+                    id: user.user_id,
+                    nama: user.nama,
+                    email: user.email,
+                    isVerified: user.is_verified,
+                },
+                auth: {
+                    accessToken,
+                    tokenType: "Bearer",
+                    expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRATION_SECONDS) || 3600
+                }
+            },
+
+        );
 
     } catch (error) {
         console.error(error.message);
-        return res.status(httpStatus.UNAUTHORIZED).json({
-            status: 'error',
-            message: error.message
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                'Login Google gagal',
+                [{ field: error.field || 'auth', message: error.message }],
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
@@ -255,56 +326,79 @@ exports.forgotPassword = async (req, res) => {
         const { email } = req.body;
 
         if (!email) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: 'Email harus diisi'
-            });
+            throw new AppError('Email harus diisi', httpStatus.BAD_REQUEST, 'email');
         }
 
         const result = await userService.requestPasswordReset(email);
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            message: result.message
-        });
+        return successResponse(
+            res,
+            httpStatus.OK,
+            result.message,
+            null,
+        );
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.BAD_REQUEST).json({
-            status: 'error',
-            message: error.message
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                'Permintaan reset password gagal',
+                [{ field: error.field || 'email', message: error.message }],
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
 exports.resetPassword = async (req, res) => {
     try {
-        const { token, newPassword } = req.body;
+        const { token } = req.query;
+        const { newPassword } = req.body;
 
         if (!token || !newPassword) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: 'Token dan password baru harus diisi'
-            });
-        }
+            const errors = [];
+            if (!token) {
+                errors.push({ field: 'token', message: 'Token tidak valid' });
+            }
+            if (!newPassword) {
+                errors.push({ field: 'newPassword', message: 'Password baru harus diisi' });
+            }
 
-        if (newPassword.length < 6) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: 'Password minimal 6 karakter'
-            });
+            throw new AppError('Reset password gagal', httpStatus.BAD_REQUEST, null, errors);
         }
 
         const result = await userService.resetPassword(token, newPassword);
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            message: result.message
-        });
+        return successResponse(
+            res,
+            httpStatus.OK,
+            result.message,
+            null,
+        );
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.BAD_REQUEST).json({
-            status: 'error',
-            message: error.message
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode || httpStatus.BAD_REQUEST,
+                "Reset password gagal",
+                error.errors.length ? error.errors : [{ field: error.field || 'reset', message: error.message }]
+            );
+        }
+
+        if (error.message === 'Token sudah kadaluarsa') {
+            return failResponse(
+                res,
+                httpStatus.UNAUTHORIZED,
+                'Reset password gagal',
+                [{ field: 'token', message: 'Token sudah kadaluarsa' }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };
