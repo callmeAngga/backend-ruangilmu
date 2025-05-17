@@ -5,6 +5,7 @@ const emailService = require('../services/emailService');
 const { hashPassword } = require('../utils/passwordUtils');
 const { generateToken, verifyToken } = require('../utils/tokenUtils');
 const httpStatus = require('../constants/httpStatus');
+const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
 
 exports.register = async (req, res) => {
     try {
@@ -12,7 +13,15 @@ exports.register = async (req, res) => {
 
         const existingUser = await userService.findByEmail(email);
         if (existingUser) {
-            return res.status(httpStatus.BAD_REQUEST).json({ message: 'Email already in use' });
+            return failResponse(
+                res,
+                httpStatus.BAD_REQUEST,
+                'Email sudah terdaftar',
+                [{
+                    field: 'email',
+                    message: `Email ${email} sudah terdaftar di sistem Ruang Ilmu`
+                }
+            ]);
         }
 
         const hashedPassword = await hashPassword(password);
@@ -22,18 +31,23 @@ exports.register = async (req, res) => {
         const verificationLink = `${process.env.BASE_URL}/auth/verify-email?token=${token}`;
         await emailService.sendVerificationEmail(user.email, user.nama, verificationLink);
 
-        res.status(httpStatus.CREATED).json({
-            message: 'Registrasi berhasil. Silakan periksa email anda untuk verifikasi',
-            token,
-            user: {
-                id: user.user_id,
-                nama: user.nama,
-                email: user.email,
-            },
-        });
+        return successResponse(
+            res,
+            httpStatus.CREATED,
+            'Registrasi berhasil. Silakan periksa email anda untuk verifikasi',
+            {
+                user: {
+                    id: user.user_id,
+                    nama: user.nama,
+                    email: user.email,
+                    createdAt: user.created_at,
+                    isVerified: user.is_verified,
+                },
+            }
+        );
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+        return errorResponse(res);
     }
 };
 
@@ -62,8 +76,8 @@ exports.login = async (req, res) => {
         // Simpan token di cookies (untuk pengujian lokal)
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: false, 
-            sameSite: 'Lax', 
+            secure: false,
+            sameSite: 'Lax',
             maxAge: 3 * 24 * 60 * 60 * 1000,
             path: '/'
         });
@@ -115,7 +129,6 @@ exports.verifyEmail = async (req, res) => {
 
         await userService.verifyEmail(decoded.id);
 
-        // res.status(httpStatus.OK).json({ message: 'Email berhasil diverifikasi' });
         return res.redirect('http://127.0.0.1:5500/login.html?message=Email berhasil diverifikasi, silakan login');
     } catch (error) {
         console.error(error.message);
@@ -129,14 +142,14 @@ exports.verifyEmail = async (req, res) => {
 exports.resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
-        
+
         if (!email) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 status: 'error',
                 message: 'Email harus diisi'
             });
         }
-        
+
         const result = await emailService.resendVerificationEmail(email);
 
         res.status(httpStatus.OK).json({
@@ -170,7 +183,7 @@ exports.refreshToken = async (req, res) => {
 
 exports.oauthGoogle = async (req, res) => {
     try {
-        const { idToken }= req.body;
+        const { idToken } = req.body;
 
         if (!idToken) {
             return res.status(httpStatus.BAD_REQUEST).json({ message: 'ID token is required' });
@@ -201,16 +214,16 @@ exports.oauthGoogle = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        
+
         if (!email) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 status: 'error',
                 message: 'Email harus diisi'
             });
         }
-        
+
         const result = await userService.requestPasswordReset(email);
-        
+
         res.status(httpStatus.OK).json({
             status: 'success',
             message: result.message
@@ -227,23 +240,23 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
-        
+
         if (!token || !newPassword) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 status: 'error',
                 message: 'Token dan password baru harus diisi'
             });
         }
-        
+
         if (newPassword.length < 6) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 status: 'error',
                 message: 'Password minimal 6 karakter'
             });
         }
-        
+
         const result = await userService.resetPassword(token, newPassword);
-        
+
         res.status(httpStatus.OK).json({
             status: 'success',
             message: result.message
