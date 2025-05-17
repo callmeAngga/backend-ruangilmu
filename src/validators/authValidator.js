@@ -54,9 +54,4 @@ const resetPasswordSchema = z.object({
     path: ['confirmPassword'],
 });
 
-
-const googleAuthSchema = z.object({
-    idToken: z.string().nonempty({ message: 'ID token tidak boleh kosong' }),
-});
-
 module.exports = { registerSchema, loginSchema, resetPasswordSchema };
