@@ -5,6 +5,7 @@ const courseRoutes = require('./src/routes/courseRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 const moduleRoutes = require('./src/routes/moduleRoutes');
+const cookieParser = require('cookie-parser');
 const app = express();
 const cors = require('cors');
 const path = require('path');
@@ -22,6 +23,9 @@ app.use(cors({
 
 // Middleware
 app.use(express.json());
+
+
+app.use(cookieParser());
 
 // Routes
 app.use('/auth', authRoutes);

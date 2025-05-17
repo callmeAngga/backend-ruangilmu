@@ -1,4 +1,4 @@
-const { jwtSecret } = require('../config/appConfig');
+const { jwtSecret, isProduction } = require('../config/appConfig');
 const userService = require('../services/userService');
 const authService = require('../services/authService');
 const emailService = require('../services/emailService');
@@ -55,8 +55,6 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const { user, accessToken, refreshToken } = await authService.login(email, password);
-
-        const isProduction = process.env.NODE_ENV === 'production';
 
         // Hapus refresh token lama dari cookies (jika ada)
         res.clearCookie('refreshToken', {
@@ -130,24 +128,36 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
     try {
-        const refreshToken = req.cookies?.refreshToken;
+        const refreshToken = req.cookies.refreshToken;
 
         if (refreshToken) {
             // Clear cookie
             res.clearCookie('refreshToken', {
                 httpOnly: true,
-                secure: true,
-                sameSite: 'strict',
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax',
+                path: '/',
+                domain: isProduction ? process.env.COOKIE_DOMAIN : undefined
             });
 
-            return res.status(200).json({ message: 'Logout successful' });
+            return successResponse(
+                res,
+                httpStatus.OK,
+                'Logout berhasil',
+                null,
+            );
         } else {
-            return res.status(400).json({ message: 'No refresh token found in cookies' });
+            return failResponse(
+                res,
+                httpStatus.UNAUTHORIZED,
+                'Refresh token tidak ditemukan',
+                null,
+            );
         }
 
     } catch (error) {
         console.error('Logout error:', error.message, error.stack);
-        res.status(500).json({ message: 'Server error during logout' });
+        return errorResponse(res);
     }
 };
 
