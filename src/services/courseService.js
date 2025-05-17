@@ -9,6 +9,10 @@ const getCourseById = async (course_id) => {
     return await Course.getCourseById(course_id);
 }
 
+const getCourseBySlug = async (course_slug) => {
+    return await Course.getCourseBySlug(course_slug);
+}
+
 const getEnrolledCourses = async (user_id) => {
     return await Course.getEnrolledCoursesByUserId(user_id);
 }
@@ -26,5 +30,6 @@ module.exports = {
     getCourseById,
     getEnrolledCourses,
     enrollCourse,
-    checkEnrollmentStatus
+    checkEnrollmentStatus,
+    getCourseBySlug
 };

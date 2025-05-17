@@ -116,7 +116,7 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies?.refreshToken;
 
         if (refreshToken) {
             // Clear cookie
@@ -135,16 +135,21 @@ exports.logout = (req, res) => {
                 null,
             );
         } else {
-            return failResponse(
-                res,
-                httpStatus.UNAUTHORIZED,
-                'Refresh token tidak ditemukan',
-                null,
-            );
+            throw new AppError('Refresh token tidak ditemukan', httpStatus.UNAUTHORIZED, 'refreshToken');
         }
 
     } catch (error) {
         console.error('Logout error:', error.message, error.stack);
+        
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                'Logout gagal',
+                [{ field: error.field || 'auth', message: error.message }],
+            );
+        }
+
         return errorResponse(res);
     }
 };
