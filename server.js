@@ -34,8 +34,8 @@ app.use('/courses', courseRoutes);
 app.use('/user', userRoutes);
 app.use('/review', reviewRoutes);
 app.use('/course', moduleRoutes);
+app.use('/course', quizRoutes); 
 app.use('/certificate', certificateRoutes);
-app.use('/quiz', quizRoutes); 
 
 // app.use('/uploads', express.static(path.join(__dirname, 'src/uploads/courses'))); 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads/')));

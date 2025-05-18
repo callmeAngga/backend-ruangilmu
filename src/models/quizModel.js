@@ -60,12 +60,9 @@ class Quiz {
     }
 
     static async getQuizWithQuestionsAndOptions(quiz_id) {
-        // Get quiz details
         const quizResult = await db.query('SELECT * FROM quizzes WHERE quiz_id = $1', [quiz_id]);
         const quiz = quizResult.rows[0];
-        
-        if (!quiz) return null;
-        
+
         // Get questions
         const questionsResult = await db.query(
             'SELECT * FROM quiz_questions WHERE quiz_id = $1 ORDER BY question_order',
