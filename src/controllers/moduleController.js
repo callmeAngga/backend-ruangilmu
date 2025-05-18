@@ -88,10 +88,7 @@ exports.completeModule = async (req, res) => {
         const canAccess = await moduleService.canAccessModule(userId, courseId, moduleId);
         
         if (!canAccess.allowed) {
-            return res.status(httpStatus.FORBIDDEN).json({
-                status: 'error',
-                message: canAccess.message
-            });
+            throw new AppError(canAccess.message, httpStatus.FORBIDDEN, 'module_access');
         }
         
         // Cek apakah ada kuis di modul ini yang harus diselesaikan
@@ -100,10 +97,7 @@ exports.completeModule = async (req, res) => {
             const quizCompleted = await moduleService.isQuizCompleted(userId, quiz.quiz_id);
             
             if (!quizCompleted) {
-                return res.status(httpStatus.BAD_REQUEST).json({
-                    status: 'error',
-                    message: 'Anda harus menyelesaikan kuis modul terlebih dahulu'
-                });
+                throw new AppError('Anda harus menyelesaikan kuis sebelum bisa menyelesaikan modul', httpStatus.FORBIDDEN, 'quiz_completion');
             }
         }
         
@@ -113,18 +107,29 @@ exports.completeModule = async (req, res) => {
         // Cek apakah ada modul berikutnya
         const nextModule = await moduleService.getNextModule(courseId, moduleId);
         
-        res.status(httpStatus.OK).json({
-            status: 'success',
+        return successResponse(res, httpStatus.OK, 'Modul berhasil diselesaikan', {
             message: 'Modul berhasil diselesaikan',
-            data: {
-                nextModule: nextModule || null
-            }
+            nextModule: nextModule ? {
+                moduleId: nextModule.module_id,
+                moduleName: nextModule.module_name,
+                moduleOrder: nextModule.module_order
+            } : null
         });
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal menandai modul sebagai selesai'
-        });
+        
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal menyelesaikan modul",
+                [{
+                    field: error.field,
+                    message: error.message,
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };

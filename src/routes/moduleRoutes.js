@@ -11,7 +11,7 @@ router.get('/:courseId/module', authMiddleware, moduleController.getModulesByCou
 // Endpoint ini digunakan untuk mendapatkan konten modul tertentu dan memverifikasi apakah modul sebelumnya sudah diselesaikan
 router.get('/:courseId/module/:moduleId', authMiddleware, enrollmentMiddleware, moduleController.getModuleById);
 
-// Endpoint untuk menyelesaikan modul
-router.post('/:courseId/:moduleId/complete', authMiddleware, enrollmentMiddleware, moduleController.completeModule);
+// Endpoint untuk merubah status modul menjadi selesai untuk user
+router.post('/:courseId/module/:moduleId/complete', authMiddleware, enrollmentMiddleware, moduleController.completeModule);
 
 module.exports = router;

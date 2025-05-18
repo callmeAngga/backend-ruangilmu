@@ -85,7 +85,7 @@ const completeModule = async (userId, moduleId) => {
 const getNextModule = async (courseId, moduleId) => {
     const currentModule = await Module.getModuleById(moduleId);
     if (!currentModule) {
-        throw new Error('Modul tidak ditemukan');
+        throw new AppError(`Module tidak ditemukan, tidak ada module dengan ID ${moduleId}`, httpStatus.NOT_FOUND, 'module_id');
     }
     
     return await Module.getNextModule(courseId, currentModule.module_order);
