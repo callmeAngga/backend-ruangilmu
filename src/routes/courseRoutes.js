@@ -10,7 +10,7 @@ router.get('/', courseController.getAllCourses);
 router.get('/:courseId', courseController.getCourseById);
 
 // Route untuk mendapatkan course tertentu berdasarkan course_slug
-router.get('/:courseSlug', courseController.getCourseBySlug);
+router.get('/detail/:courseSlug', courseController.getCourseBySlug);
 
 // Route untuk enroll course
 router.post('/:courseId/enroll', authMiddleware, courseController.enrollCourse);

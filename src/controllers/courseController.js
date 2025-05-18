@@ -54,8 +54,8 @@ exports.getCourseById = async (req, res) => {
 };
 
 exports.getCourseBySlug = async (req, res) => {
-    try {
-        const course_slug = parseInt(req.params.courseSlug);
+    try {;
+        const course_slug = req.params.courseSlug;
         const course = await courseService.getCourseBySlug(course_slug);
 
         if (!course) {
@@ -182,7 +182,7 @@ exports.checkEnrollmentStatus = async (req, res) => {
 
         const enrolled = await courseService.checkEnrollmentStatus(user_id, course_id);
 
-        return successResponse(res, httpStatus.OK, 'Berhasil mengecek status enrollment', { enrolled });
+        return successResponse(res, httpStatus.OK, 'Berhasil mengecek status enrollment', { course, enrolled });
     } catch (error) {
         console.error(error.message);
 
