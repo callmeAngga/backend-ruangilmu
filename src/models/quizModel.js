@@ -56,7 +56,7 @@ class Quiz {
             'SELECT * FROM user_quiz_results WHERE user_id = $1 AND quiz_id = $2 AND passed = true',
             [user_id, quiz_id]
         );
-        return result.rows.length > 0;
+        return result.rows[0];
     }
 
     static async getQuizWithQuestionsAndOptions(quiz_id) {

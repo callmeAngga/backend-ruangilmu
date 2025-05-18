@@ -25,6 +25,14 @@ const getQuizResult = async (userId, quizId) => {
     return await Quiz.getQuizResult(userId, quizId);
 };
 
+const checkQuizCompletion = async (userId, quizId) => {
+    return await Quiz.checkQuizCompletion(userId, quizId);
+};
+
+const getQuizByCourseId = async (courseId) => {
+    return await Quiz.getFinalExamByCourseId(courseId);
+}
+
 const evaluateAndSaveQuizResult = async (userId, moduleId, answers) => {
     // Dapatkan kuis untuk modul
     const quiz = await Quiz.getQuizByModuleId(moduleId);
@@ -116,5 +124,7 @@ module.exports = {
     getQuizResult,
     evaluateAndSaveQuizResult,
     evaluateAndSaveFinalExamResult,
-    createCertificate
+    createCertificate,
+    checkQuizCompletion,
+    getQuizByCourseId
 };
