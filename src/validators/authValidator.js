@@ -54,4 +54,24 @@ const resetPasswordSchema = z.object({
     path: ['confirmPassword'],
 });
 
-module.exports = { registerSchema, loginSchema, resetPasswordSchema };
+const changePasswordSchema = z.object({
+    currentPassword: z
+        .string()
+        .min(8)
+        .max(20),
+
+    newPassword: z
+        .string()
+        .min(8, { message: 'Password minimal 8 karakter' })
+        .max(20, { message: 'Password maksimal 20 karakter' })
+        .regex(/[A-Z]/, { message: 'Password harus mengandung minimal 1 huruf besar' })
+        .regex(/[a-z]/, { message: 'Password harus mengandung minimal 1 huruf kecil' })
+        .regex(/[0-9]/, { message: 'Password harus mengandung minimal 1 angka' }),
+
+    confirmPassword: z.string().min(8),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'Password dan konfirmasi password harus sama',
+    path: ['confirmPassword'],
+});
+
+module.exports = { registerSchema, loginSchema, resetPasswordSchema, changePasswordSchema };

@@ -35,7 +35,8 @@ app.use('/user', userRoutes);
 app.use('/review', reviewRoutes);
 app.use('/module', moduleRoutes); 
 
-app.use('/src/uploads/courses', express.static(path.join(__dirname, 'src/uploads/courses'))); 
+// app.use('/uploads', express.static(path.join(__dirname, 'src/uploads/courses'))); 
+app.use('/uploads', express.static(path.join(__dirname, 'src/uploads/')));
 
 
 // Basic route for testing

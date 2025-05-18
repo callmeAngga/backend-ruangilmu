@@ -12,7 +12,7 @@ class User {
     }
 
     static async updateProfile(userId, data) {
-        const allowedFields = ['nama', 'email', 'tanggal_lahir', 'kelas'];
+        const allowedFields = ['nama', 'tanggal_lahir', 'kelas'];
         const updates = Object.entries(data)
             .filter(([key]) => allowedFields.includes(key))
             .map(([key, value]) => `${key} = '${value}'`);
@@ -60,6 +60,14 @@ class User {
         const result = await db.query(
             'UPDATE users SET password = $1 WHERE user_id = $2 RETURNING user_id',
             [newPassword, userId]
+        );
+        return result.rows[0];
+    }
+
+    static async updateProfilePicture(userId, profilePicture) {
+        const result = await db.query(
+            'UPDATE users SET user_profile = $1 WHERE user_id = $2 RETURNING *',
+            [profilePicture, userId]
         );
         return result.rows[0];
     }
