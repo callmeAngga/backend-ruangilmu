@@ -43,7 +43,7 @@ class Certificate {
 
     static async verifyCertificate(certificate_number) {
         const result = await db.query(
-            `SELECT c.*, u.name as user_name, co.course_name
+            `SELECT c.*, u.nama as user_name, co.course_name
             FROM certificates c
             JOIN users u ON c.user_id = u.user_id
             JOIN courses co ON c.course_id = co.course_id

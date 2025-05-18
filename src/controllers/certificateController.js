@@ -169,10 +169,7 @@ exports.downloadCertificate = async (req, res) => {
             res.download(filePath, fileName, (err) => {
                 if (err) {
                     console.error(err);
-                    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                        status: 'error',
-                        message: 'Gagal mengunduh sertifikat'
-                    });
+                    return errorResponse(res);
                 }
 
                 // Hapus file temporary setelah diunduh
@@ -181,60 +178,85 @@ exports.downloadCertificate = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal mengunduh sertifikat'
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal mengunduh sertifikat",
+                [{
+                    field: error.field,
+                    message: error.message
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
 exports.getUserCertificates = async (req, res) => {
     try {
         const userId = req.user.id;
-
         const certificates = await certificateService.getUserCertificates(userId);
+        if (!certificates || certificates.length === 0) {
+            throw new AppError('Tidak ada sertifikat yang ditemukan', httpStatus.NOT_FOUND, 'certificates');
+        }
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            data: certificates
-        });
+        return successResponse(res, httpStatus.OK, "Sertifikat berhasil diambil", certificates);
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal mengambil data sertifikat'
-        });
+        
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal mengambil sertifikat",
+                [{
+                    field: error.field,
+                    message: error.message
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
 exports.verifyCertificate = async (req, res) => {
     try {
         const certificateNumber = req.params.certificateNumber;
-
         const certificate = await certificateService.verifyCertificate(certificateNumber);
-
         if (!certificate) {
-            return res.status(httpStatus.NOT_FOUND).json({
-                status: 'error',
-                message: 'Sertifikat tidak ditemukan atau tidak valid'
-            });
+            throw new AppError('Sertifikat tidak ditemukan atau tidak valid', httpStatus.NOT_FOUND, 'certificate');
         }
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            data: {
-                certificateNumber: certificate.certificate_number,
-                userName: certificate.user_name,
-                courseTitle: certificate.course_title,
-                issueDate: certificate.issue_date,
-                finalScore: certificate.final_score
-            }
+        return successResponse(res, httpStatus.OK, "Sertifikat berhasil diverifikasi", {
+            certificateNumber: certificate.certificate_number,
+            userName: certificate.user_name,
+            courseTitle: certificate.course_title,
+            issueDate: new Date(certificate.issue_date).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }),
+            finalScore: certificate.final_score
         });
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal memverifikasi sertifikat'
-        });
+        
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal memverifikasi sertifikat",
+                [{
+                    field: error.field,
+                    message: error.message
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };
