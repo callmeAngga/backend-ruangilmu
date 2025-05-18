@@ -361,21 +361,21 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     try {
         const { token } = req.query;
-        const { newPassword } = req.body;
+        const { password } = req.body;
 
-        if (!token || !newPassword) {
+        if (!token || !password) {
             const errors = [];
             if (!token) {
                 errors.push({ field: 'token', message: 'Token tidak valid' });
             }
-            if (!newPassword) {
+            if (!password) {
                 errors.push({ field: 'newPassword', message: 'Password baru harus diisi' });
             }
 
             throw new AppError('Reset password gagal', httpStatus.BAD_REQUEST, null, errors);
         }
 
-        const result = await userService.resetPassword(token, newPassword);
+        const result = await userService.resetPassword(token, password);
 
         return successResponse(
             res,

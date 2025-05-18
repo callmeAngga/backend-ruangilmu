@@ -23,7 +23,7 @@ class User {
             UPDATE users 
             SET ${updates.join(', ')}, updated_at = NOW() 
             WHERE user_id = $1 
-            RETURNING user_id, nama, email, tanggal_lahir, 'kelas', created_at, updated_at
+            RETURNING user_id, nama, email, tanggal_lahir, kelas, created_at, updated_at
         `;
         
         const result = await db.query(query, [userId]);

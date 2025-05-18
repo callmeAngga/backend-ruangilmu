@@ -2,9 +2,12 @@ const User = require('../models/userModel');
 const { generateToken, verifyToken } = require('../utils/tokenUtils');
 const { hashPassword, comparePassword } = require('../utils/passwordUtils');
 const emailService = require('./emailService');
-const { failResponse, errorResponse } = require('../utils/responseUtil');
+const { failResponse } = require('../utils/responseUtil');
 const AppError = require('../utils/appError');
 const httpStatus = require('../constants/httpStatus');
+const jwtSecret = process.env.JWT_SECRET;
+const path = require('path');
+const fs = require('fs');
 
 const findByEmail = async (email) => {
     return await User.findByEmail(email);
@@ -95,13 +98,9 @@ const updateProfilePicture = async (userId, profilePicture) => {
         throw new AppError('User tidak ditemukan', httpStatus.NOT_FOUND, 'user_id');
     }
 
-    // if (!profilePicture) {
-    //     throw new AppError('Gambar profil tidak ditemukan', httpStatus.BAD_REQUEST, 'profile_picture');
-    // }
-
     if (user.user_profile && user.user_profile !== null) {
         try { 
-            const oldFilePath = path.join(__dirname,'../uploads/userprofile', user.user_profile);
+            const oldFilePath = path.join(__dirname,`../uploads/userprofile`, user.user_profile);
             if (fs.existsSync(oldFilePath)) {
                 fs.unlinkSync(oldFilePath);
             }
@@ -121,7 +120,7 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
         throw new AppError('User tidak ditemukan', httpStatus.NOT_FOUND, 'user_id');
     }
 
-    const isMatch = await comparePassword(currentPassword);
+    const isMatch = await comparePassword(currentPassword, user.password);
     if (!isMatch) {
         throw new AppError('Password salah, tolong masukan password lama dengan benar', httpStatus.UNAUTHORIZED, 'current_password');
     }

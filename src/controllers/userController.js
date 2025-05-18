@@ -65,9 +65,8 @@ exports.updateProfile = async (req, res) => {
 exports.updateProfilePicture = async (req, res) => {
     try {
         const userId = req.user.id;
-        const profilePicture = req.file;
+        const profilePicture = req.file.filename;
 
-        const profilePicturePath = `/userprofile/${req.file.filename}`
         const updatedUser = await userService.updateProfilePicture(userId, profilePicture);
 
         return successResponse(res, httpStatus.OK, 'Berhasil memperbarui gambar profil', {

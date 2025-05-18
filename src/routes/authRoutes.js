@@ -6,9 +6,9 @@ const validateRequest = require('../middleware/validateRequestMiddleware');
 const { registerSchema, loginSchema, resetPasswordSchema } = require('../validators/authValidator');
 
 router.post('/register', validateRequest(registerSchema), authController.register);
+router.get('/verify-email', authController.verifyEmail);
 router.post('/login', validateRequest(loginSchema), authController.login);
 router.post('/oauth-google', authController.oauthGoogle);
-router.get('/verify-email', authController.verifyEmail);
 router.post('/resend-verification', authController.resendVerificationEmail);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/forgot-password', authController.forgotPassword);

@@ -7,7 +7,4 @@ router.get('/:courseId', authMiddleware, moduleController.getModulesByCourse);
 router.get('/:courseId/:moduleId', authMiddleware, moduleController.getModuleById);
 router.post('/:courseId/:moduleId/complete', authMiddleware, moduleController.completeModule);
 
-
-
-
 module.exports = router;
