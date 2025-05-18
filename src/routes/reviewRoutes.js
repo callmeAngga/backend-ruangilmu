@@ -16,9 +16,9 @@ router.get('/course/:courseId', authMiddleware, reviewController.getReviewsByCou
 router.get('/user/course/:courseId', authMiddleware, enrollmentMiddleware, reviewController.getUserReviewForCourse);
 
 // Endpoint untuk mengupdate review
-router.put('/:id', authMiddleware, validateRequest(reviewContentSchema), reviewController.updateReview);
+router.put('/update/:reviewId', authMiddleware, validateRequest(reviewContentSchema), reviewController.updateReview);
 
 // Endpoint untuk menghapus review
-router.delete('/:id', authMiddleware, reviewController.deleteReview);
+router.delete('/delete/:reviewId', authMiddleware, reviewController.deleteReview);
 
 module.exports = router;

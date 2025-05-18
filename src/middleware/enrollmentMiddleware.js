@@ -10,7 +10,7 @@ const checkEnrollment = async (req, res, next) => {
             throw new AppError('User tidak terautentikasi, silakan login terlebih dahulu', httpStatus.UNAUTHORIZED, 'user');
         }
 
-        const course_id = parseInt(req.body.course_id);
+        const course_id = parseInt(req.params.courseId);
         if (!course_id) {
             throw new AppError('Course ID tidak ditemukan', httpStatus.BAD_REQUEST, 'course');
         }
