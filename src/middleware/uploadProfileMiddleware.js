@@ -2,7 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const AppError = require('../utils/appError');
-const httpStatus = require('http-status');
+const httpStatus = require('../constants/httpStatus');
 
 const uploadDir = path.join(__dirname, '../uploads/userprofile');
 if (!fs.existsSync(uploadDir)) {
