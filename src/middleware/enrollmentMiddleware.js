@@ -22,7 +22,7 @@ const checkEnrollment = async (req, res, next) => {
 
         const isEnrolled = await courseService.checkEnrollmentStatus(user_id, course_id);
         if (!isEnrolled) {
-            throw new AppError('Anda harus terdaftar dalam course ini untuk memberikan review', httpStatus.FORBIDDEN, 'enrollment');
+            throw new AppError('Anda tidak punya izin akses, pastikan anda sudah enroll ke course ini', httpStatus.FORBIDDEN, 'enrollment');
         }
 
         next();

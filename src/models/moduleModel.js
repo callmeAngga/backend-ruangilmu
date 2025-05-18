@@ -14,6 +14,14 @@ class Module {
         return result.rows[0];
     }
 
+    static async checkModulePartOfCourse(module_id, course_id) {
+        const result = await db.query(
+            'SELECT * FROM modules WHERE module_id = $1 AND course_id = $2',
+            [module_id, course_id]
+        );
+        return result.rows[0];
+    }
+
     static async getModuleContent(module_id) {
         const result = await db.query(
             'SELECT * FROM module_contents WHERE module_id = $1 ORDER BY content_order',

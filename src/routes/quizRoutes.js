@@ -7,3 +7,5 @@ router.get('/:courseId/:moduleId/quiz', authMiddleware, quizController.getModule
 router.post('/:courseId/:moduleId/quiz/submit', authMiddleware, quizController.submitModuleQuiz);
 router.get('/:courseId/final-exam', authMiddleware, quizController.getFinalExam);
 router.post('/:courseId/final-exam/submit', authMiddleware, quizController.submitFinalExam);
+
+module.exports = router;

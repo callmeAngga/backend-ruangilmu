@@ -1,8 +1,20 @@
 const Module = require('../models/moduleModel');
+const Course = require('../models/courseModel');
 const Quiz = require('../models/quizModel');
+const AppError = require('../utils/appError');
+const httpStatus = require('../constants/httpStatus');
 
 const getModulesByCourse = async (userId, courseId) => {
+    const course = await Course.getCourseById(courseId);
+    if (!course) {
+        throw new AppError(`Course tidak ditemukan, tidak ada course dengan ID ${courseId}`, httpStatus.NOT_FOUND, 'course_id');
+    }
+
     const modules = await Module.getModulesByCourseId(courseId);
+    if (!modules || modules.length === 0) {
+        throw new AppError('Course tidak atau belum memiliki daftar module', httpStatus.NOT_FOUND, 'module_id');
+    }
+
     const progress = await Module.getUserProgress(userId, courseId);
     
     // Merge progress information with modules
@@ -18,22 +30,21 @@ const getModulesByCourse = async (userId, courseId) => {
 
 const getModuleWithContent = async (moduleId) => {
     const module = await Module.getModuleById(moduleId);
-    
-    if (!module) {
-        return null;
-    }
-    
     const content = await Module.getModuleContent(moduleId);
+
     module.content = content;
-    
     return module;
 };
 
 const canAccessModule = async (userId, courseId, moduleId) => {
-    const module = await Module.getModuleById(moduleId);
-    
-    if (!module) {
-        throw new Error('Modul tidak ditemukan');
+    const cekCourse = await Module.getModulesByCourseId(courseId);
+    if (!cekCourse || cekCourse.length === 0) {
+        throw new AppError('Course tidak memiliki modul', httpStatus.NOT_FOUND, 'course_id');
+    }
+
+    const module = await Module.checkModulePartOfCourse(moduleId, courseId);
+    if (!module || module.length === 0) {
+        throw new AppError(`Tidak ada module dengan ID ${moduleId} pada course ini`, httpStatus.NOT_FOUND, 'module_id');
     }
     
     // Jika bukan modul pertama, cek apakah modul sebelumnya sudah diselesaikan
