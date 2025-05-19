@@ -2,6 +2,7 @@ const Review = require('../models/reviewModel');
 const Course = require('../models/courseModel');
 const AppError = require('../utils/appError');
 const httpStatus = require('../constants/httpStatus');
+const getGradioClient = require('../utils/gradioClient');
 
 const createReview = async (user_id, course_id, content) => {
     const isEnrolled = await Course.checkUserEnrollment(user_id, course_id);
@@ -75,29 +76,12 @@ const analyzeSentiment = async (review_id) => {
         throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
     }
 
-    // Contoh sederhana untuk analisis sentiment, kedepannya akan diganti dengan model AI
-    let sentiment = 'netral';
-    const text = review.content.toLowerCase();
-
-    const positiveWords = ['bagus', 'baik', 'suka', 'hebat', 'keren', 'mantap', 'memuaskan'];
-    const negativeWords = ['buruk', 'jelek', 'tidak suka', 'kecewa', 'kurang', 'sulit'];
-
-    let positiveCount = 0;
-    let negativeCount = 0;
-
-    positiveWords.forEach(word => {
-        if (text.includes(word)) positiveCount++;
+    const client = await getGradioClient("wongfromindo/sentiment-ruangilmu-api");
+    const sentiment = await client.predict('/predict', {
+        text: review.content.toLowerCase(),
     });
 
-    negativeWords.forEach(word => {
-        if (text.includes(word)) negativeCount++;
-    });
-
-    if (positiveCount > negativeCount) sentiment = 'positif';
-    else if (negativeCount > positiveCount) sentiment = 'negatif';
-
-    // Update sentiment pada review
-    await Review.updateSentiment(review_id, sentiment);
+    await Review.updateSentiment(review_id, sentiment.data[0]);
 
     return sentiment;
 };

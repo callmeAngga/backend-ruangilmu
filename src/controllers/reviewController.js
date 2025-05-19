@@ -1,6 +1,5 @@
 const httpStatus = require('../constants/httpStatus');
 const reviewService = require('../services/reviewService');
-const reviewValidator = require('../validators/reviewValidator');
 const AppError = require('../utils/appError');
 const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
 
@@ -8,11 +7,12 @@ exports.createReview = async (req, res) => {
     try {
         const { course_id, content } = req.body;
         const user_id = req.user.id;
-
         const review = await reviewService.createReview(user_id, course_id, content);
 
         // Analisa sentiment setelah review dibuat
+        console.log('Satu', review.review_id);
         await reviewService.analyzeSentiment(review.review_id);
+        console.log('Dua:', review.review_id);
 
         // Ambil review yang sudah termasuk sentiment
         const updatedReview = await reviewService.getReviewById(review.review_id);

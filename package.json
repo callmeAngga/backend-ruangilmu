@@ -29,6 +29,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@gradio/client": "^1.14.2",
     "nodemon": "^3.1.9"
   }
 }

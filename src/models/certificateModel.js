@@ -41,7 +41,7 @@ class Certificate {
         return result.rows;
     }
 
-    static async verifyCertificate(certificate_number) {
+    static async verifyCertificate(certificate_number) {    
         const result = await db.query(
             `SELECT c.*, u.nama as user_name, co.course_name
             FROM certificates c

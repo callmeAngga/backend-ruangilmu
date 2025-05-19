@@ -7,7 +7,7 @@ const validateRequest = require('../middleware/validateRequestMiddleware');
 const { reviewContentSchema } = require('../validators/reviewValidator');
 
 // Endpoint untuk menambahkan review baru
-router.post('/', authMiddleware, enrollmentMiddleware, validateRequest(reviewContentSchema), reviewController.createReview);
+router.post('/', authMiddleware, validateRequest(reviewContentSchema), reviewController.createReview);
 
 // Endpoint untuk mendapatkan review tertentu berdasarkan course
 router.get('/course/:courseId', authMiddleware, reviewController.getReviewsByCourse);
