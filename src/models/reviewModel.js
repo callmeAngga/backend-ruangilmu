@@ -19,14 +19,15 @@ class Review {
         return result.rows;
     }
 
-    static async getReviewsByCourseId(course_id) {
+    static async getReviewsByCourseId(course_id, user_id) {
         const result = await db.query(`
-            SELECT r.*, u.nama 
+            SELECT r.*, u.nama,
+               CASE WHEN r.user_id = $2 THEN 0 ELSE 1 END AS priority
             FROM reviews r
             JOIN users u ON r.user_id = u.user_id
             WHERE r.course_id = $1
-            ORDER BY r.created_at DESC
-        `, [course_id]);
+            ORDER BY priority, r.created_at DESC
+        `, [course_id, user_id]);
         return result.rows;
     }
 

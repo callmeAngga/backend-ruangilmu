@@ -9,12 +9,8 @@ exports.createReview = async (req, res) => {
         const user_id = req.user.id;
         const review = await reviewService.createReview(user_id, course_id, content);
 
-        // Analisa sentiment setelah review dibuat
-        console.log('Satu', review.review_id);
         await reviewService.analyzeSentiment(review.review_id);
-        console.log('Dua:', review.review_id);
 
-        // Ambil review yang sudah termasuk sentiment
         const updatedReview = await reviewService.getReviewById(review.review_id);
 
         return successResponse(res, httpStatus.CREATED, 'Review berhasil dibuat', updatedReview);
@@ -36,12 +32,16 @@ exports.createReview = async (req, res) => {
 
 exports.getReviewsByCourse = async (req, res) => {
     try {
+        const user_id = req.user.id;
+        if (!user_id) {
+            throw new AppError('User ID tidak ditemukan', httpStatus.BAD_REQUEST, 'user');
+        }
         const course_id = parseInt(req.params.courseId);
         if (!course_id) {
             throw new AppError('Course ID tidak ditemukan', httpStatus.BAD_REQUEST, 'course');
         }
 
-        const reviews = await reviewService.getReviewsByCourseId(course_id);
+        const reviews = await reviewService.getReviewsByCourseId(course_id, user_id);
         if (!reviews || reviews.length === 0) {
             throw new AppError('Tidak ada review untuk course ini', httpStatus.NOT_FOUND, 'review');
         }
@@ -67,9 +67,6 @@ exports.getUserReviewForCourse = async (req, res) => {
     try {
         const user_id = req.user.id;
         const course_id = parseInt(req.params.courseId);
-
-        console.log('User ID:', user_id);
-        console.log('Course ID:', course_id);
 
         const review = await reviewService.getUserReviewForCourse(user_id, course_id);
         if (!review) {
