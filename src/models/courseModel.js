@@ -3,7 +3,11 @@ const db = require('../db');
 class Course {
     static async getCourseById(course_id) {
         const result = await db.query('SELECT * FROM courses WHERE course_id = $1', [course_id]);
-        console.log('Query Result:', result.rows);
+        return result.rows[0];
+    }
+
+    static async getCourseBySlug(course_slug) {
+        const result = await db.query('SELECT * FROM courses WHERE course_slug = $1', [course_slug]);
         return result.rows[0];
     }
 

@@ -1,29 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const moduleController = require('../controllers/moduleController');
-const quizController = require('../controllers/quizController');
-const certificateController = require('../controllers/certificateController');
 const authMiddleware = require('../middleware/authMiddleware');
 const enrollmentMiddleware = require('../middleware/enrollmentMiddleware');
 
-// Middleware untuk memeriksa apakah pengguna sudah enroll dalam course
-router.use('/:courseId', enrollmentMiddleware);
+// Endpoint untuk mendapatkan semua module berdasarkan course_id
+router.get('/:courseId/module', authMiddleware, moduleController.getModulesByCourse);
 
-// Rute untuk modul
-router.get('/:courseId/modules', authMiddleware, moduleController.getModulesByCourse);
-router.get('/:courseId/modules/:moduleId', authMiddleware, moduleController.getModuleById);
-router.post('/:courseId/modules/:moduleId/complete', authMiddleware, moduleController.completeModule);
+// Endpoint untuk mendapatkan module berdasarkan course_id dan module_id
+// Endpoint ini digunakan untuk mendapatkan konten modul tertentu dan memverifikasi apakah modul sebelumnya sudah diselesaikan
+router.get('/:courseId/module/:moduleId', authMiddleware, enrollmentMiddleware, moduleController.getModuleById);
 
-// Rute untuk kuis/ujian
-router.get('/:courseId/modules/:moduleId/quiz', authMiddleware, quizController.getModuleQuiz);
-router.post('/:courseId/modules/:moduleId/quiz/submit', authMiddleware, quizController.submitModuleQuiz);
-router.get('/:courseId/final-exam', authMiddleware, quizController.getFinalExam);
-router.post('/:courseId/final-exam/submit', authMiddleware, quizController.submitFinalExam);
-
-// Rute untuk sertifikat
-router.get('/:courseId/certificate', authMiddleware, certificateController.getCertificate);
-router.get('/:courseId/certificate/download', authMiddleware, certificateController.downloadCertificate);
-router.get('/certificates', authMiddleware, certificateController.getUserCertificates);
-router.get('/certificates/verify/:certificateNumber', certificateController.verifyCertificate);
+// Endpoint untuk merubah status modul menjadi selesai untuk user
+router.post('/:courseId/module/:moduleId/complete', authMiddleware, enrollmentMiddleware, moduleController.completeModule);
 
 module.exports = router;

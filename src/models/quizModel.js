@@ -56,16 +56,13 @@ class Quiz {
             'SELECT * FROM user_quiz_results WHERE user_id = $1 AND quiz_id = $2 AND passed = true',
             [user_id, quiz_id]
         );
-        return result.rows.length > 0;
+        return result.rows[0];
     }
 
     static async getQuizWithQuestionsAndOptions(quiz_id) {
-        // Get quiz details
         const quizResult = await db.query('SELECT * FROM quizzes WHERE quiz_id = $1', [quiz_id]);
         const quiz = quizResult.rows[0];
-        
-        if (!quiz) return null;
-        
+
         // Get questions
         const questionsResult = await db.query(
             'SELECT * FROM quiz_questions WHERE quiz_id = $1 ORDER BY question_order',

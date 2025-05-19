@@ -1,11 +1,12 @@
 const Quiz = require('../models/quizModel');
 const Certificate = require('../models/certificateModel');
+const AppError = require('../utils/appError');
+const httpStatus = require('../constants/httpStatus');
 
 const getQuizByModule = async (moduleId) => {
     const quiz = await Quiz.getQuizByModuleId(moduleId);
-    
-    if (!quiz) {
-        return null;
+    if (!quiz || quiz.length === 0) {
+        throw new AppError('Kuis tidak ditemukan untuk modul ini', httpStatus.NOT_FOUND, 'quiz_id');
     }
     
     return await Quiz.getQuizWithQuestionsAndOptions(quiz.quiz_id);
@@ -13,9 +14,8 @@ const getQuizByModule = async (moduleId) => {
 
 const getFinalExam = async (courseId) => {
     const finalExam = await Quiz.getFinalExamByCourseId(courseId);
-    
-    if (!finalExam) {
-        return null;
+    if (!finalExam || finalExam.length === 0) {
+        throw new AppError('Ujian akhir tidak ditemukan untuk course ini', httpStatus.NOT_FOUND, 'quiz_id');
     }
     
     return await Quiz.getQuizWithQuestionsAndOptions(finalExam.quiz_id);
@@ -25,12 +25,19 @@ const getQuizResult = async (userId, quizId) => {
     return await Quiz.getQuizResult(userId, quizId);
 };
 
+const checkQuizCompletion = async (userId, quizId) => {
+    return await Quiz.checkQuizCompletion(userId, quizId);
+};
+
+const getQuizByCourseId = async (courseId) => {
+    return await Quiz.getFinalExamByCourseId(courseId);
+}
+
 const evaluateAndSaveQuizResult = async (userId, moduleId, answers) => {
     // Dapatkan kuis untuk modul
     const quiz = await Quiz.getQuizByModuleId(moduleId);
-    
-    if (!quiz) {
-        throw new Error('Kuis tidak ditemukan');
+    if (!quiz || quiz.length === 0) {
+        throw new AppError('Kuis tidak ditemukan untuk modul ini', httpStatus.NOT_FOUND, 'quiz_id');
     }
     
     // Dapatkan semua pertanyaan kuis
@@ -68,13 +75,15 @@ const evaluateAndSaveQuizResult = async (userId, moduleId, answers) => {
 const evaluateAndSaveFinalExamResult = async (userId, courseId, answers) => {
     // Dapatkan ujian akhir
     const finalExam = await Quiz.getFinalExamByCourseId(courseId);
-    
-    if (!finalExam) {
-        throw new Error('Ujian akhir tidak ditemukan');
+    if (!finalExam || finalExam.length === 0) {
+        throw new AppError('Ujian akhir tidak ditemukan untuk course ini', httpStatus.NOT_FOUND, 'quiz_id');
     }
     
     // Dapatkan semua pertanyaan ujian
     const questions = await Quiz.getQuizQuestions(finalExam.quiz_id);
+    if (!questions || questions.length === 0) {
+        throw new AppError('Tidak ada pertanyaan untuk ujian akhir ini', httpStatus.NOT_FOUND, 'question_id');
+    }
     
     // Evaluasi jawaban
     let correctCount = 0;
@@ -115,5 +124,7 @@ module.exports = {
     getQuizResult,
     evaluateAndSaveQuizResult,
     evaluateAndSaveFinalExamResult,
-    createCertificate
+    createCertificate,
+    checkQuizCompletion,
+    getQuizByCourseId
 };

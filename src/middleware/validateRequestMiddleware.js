@@ -1,4 +1,5 @@
 const { ZodError } = require('zod');
+const { failResponse, errorResponse } = require('../utils/responseUtil');
 
 const validateRequest = (schema) => (req, res, next) => {
     try {
@@ -6,9 +7,14 @@ const validateRequest = (schema) => (req, res, next) => {
         next();
     } catch (error) {
         if (error instanceof ZodError) {
-            return res.status(400).json({ errors: error.errors.map(err => err.message) });
+            const formattedErrors = error.errors.map(err => ({
+                field: err.path.join('.'),
+                message: err.message
+            }));
+            
+            return failResponse(res, 400, 'Validation Error', formattedErrors);
         }
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return errorResponse(res);
     }
 };
 

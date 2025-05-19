@@ -1,66 +1,65 @@
 const httpStatus = require('../constants/httpStatus');
 const reviewService = require('../services/reviewService');
-const reviewValidator = require('../validators/reviewValidator');
+const AppError = require('../utils/appError');
+const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
 
 exports.createReview = async (req, res) => {
     try {
-        // Validasi input
-        const { error } = reviewValidator.validateCreateReview(req.body);
-        if (error) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: error.details[0].message
-            });
-        }
-
         const { course_id, content } = req.body;
         const user_id = req.user.id;
-
         const review = await reviewService.createReview(user_id, course_id, content);
-        
+
         // Analisa sentiment setelah review dibuat
+        console.log('Satu', review.review_id);
         await reviewService.analyzeSentiment(review.review_id);
-        
+        console.log('Dua:', review.review_id);
+
         // Ambil review yang sudah termasuk sentiment
         const updatedReview = await reviewService.getReviewById(review.review_id);
 
-        res.status(httpStatus.CREATED).json({
-            status: 'success',
-            message: 'Review berhasil dibuat',
-            data: updatedReview
-        });
+        return successResponse(res, httpStatus.CREATED, 'Review berhasil dibuat', updatedReview);
     } catch (error) {
         console.error(error.message);
-        
-        if (error.message.includes('terdaftar') || error.message.includes('sudah memberikan review')) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: error.message
-            });
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, "Gagal membuat review", [
+                {
+                    field: error.field,
+                    message: error.message,
+                }
+            ]);
         }
 
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal membuat review'
-        });
+        return errorResponse(res);
     }
 };
 
 exports.getReviewsByCourse = async (req, res) => {
     try {
         const course_id = parseInt(req.params.courseId);
-        const reviews = await reviewService.getReviewsByCourseId(course_id);
+        if (!course_id) {
+            throw new AppError('Course ID tidak ditemukan', httpStatus.BAD_REQUEST, 'course');
+        }
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            data: reviews
-        });
+        const reviews = await reviewService.getReviewsByCourseId(course_id);
+        if (!reviews || reviews.length === 0) {
+            throw new AppError('Tidak ada review untuk course ini', httpStatus.NOT_FOUND, 'review');
+        }
+
+        return successResponse(res, httpStatus.OK, 'Berhasil mengambil review course', reviews);
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal mengambil review course'
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, "Gagal mengambil review", [
+                {
+                    field: error.field,
+                    message: error.message,
+                }
+            ]);
+        }
+
+        return errorResponse(res);
     }
 };
 
@@ -68,98 +67,95 @@ exports.getUserReviewForCourse = async (req, res) => {
     try {
         const user_id = req.user.id;
         const course_id = parseInt(req.params.courseId);
-        
+
+        console.log('User ID:', user_id);
+        console.log('Course ID:', course_id);
+
         const review = await reviewService.getUserReviewForCourse(user_id, course_id);
-        
         if (!review) {
-            return res.status(httpStatus.NOT_FOUND).json({
-                status: 'error',
-                message: 'Review tidak ditemukan'
-            });
+            throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
         }
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            data: review
-        });
+        return successResponse(res, httpStatus.OK, 'Berhasil mengambil review', review);
     } catch (error) {
         console.error(error.message);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal mengambil review'
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, "Gagal mengambil review", [
+                {
+                    field: error.field,
+                    message: error.message,
+                }
+            ]);
+        }
+
+        return errorResponse(res);
     }
 };
 
 exports.updateReview = async (req, res) => {
     try {
-        // Validasi input
-        const { error } = reviewValidator.validateUpdateReview(req.body);
-        if (error) {
-            return res.status(httpStatus.BAD_REQUEST).json({
-                status: 'error',
-                message: error.details[0].message
-            });
-        }
-
-        const review_id = parseInt(req.params.id);
+        const review_id = parseInt(req.params.reviewId);
         const user_id = req.user.id;
         const { content } = req.body;
 
         const updatedReview = await reviewService.updateReview(review_id, user_id, content);
-        
-        // Analisa ulang sentiment setelah review diupdate
-        await reviewService.analyzeSentiment(review_id);
-        
-        // Ambil review yang sudah termasuk sentiment terbaru
-        const finalReview = await reviewService.getReviewById(review_id);
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            message: 'Review berhasil diperbarui',
-            data: finalReview
-        });
+        // Analisa ulang sentiment setelah review diupdate
+        await reviewService.analyzeSentiment(updatedReview.review_id);
+
+        // Ambil review yang sudah termasuk sentiment terbaru
+        const finalReview = await reviewService.getReviewById(updatedReview.review_id);
+
+        return successResponse(res, httpStatus.OK, 'Review berhasil diperbarui', finalReview);
     } catch (error) {
         console.error(error.message);
-        
-        if (error.message === 'Review tidak ditemukan' || error.message.includes('tidak memiliki izin')) {
-            return res.status(httpStatus.FORBIDDEN).json({
-                status: 'error',
-                message: error.message
-            });
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, "Gagal memperbarui review", [
+                {
+                    field: error.field,
+                    message: error.message,
+                }
+            ]);
         }
 
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal memperbarui review'
-        });
+        return errorResponse(res);
     }
 };
 
 exports.deleteReview = async (req, res) => {
     try {
-        const review_id = parseInt(req.params.id);
+        const review_id = parseInt(req.params.reviewId);
         const user_id = req.user.id;
+
+        if (!review_id || !user_id) {
+            const errors = [];
+            if (!review_id) {
+                errors.push({
+                    field: 'review_id',
+                    message: 'Review ID tidak ditemukan'
+                });
+            }
+            if (!user_id) {
+                errors.push({
+                    field: 'user_id',
+                    message: 'User ID tidak ditemukan'
+                });
+            }
+            throw new AppError('Gagal menghapus review pastikan', httpStatus.BAD_REQUEST, null, errors);
+        }
 
         await reviewService.deleteReview(review_id, user_id);
 
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            message: 'Review berhasil dihapus'
-        });
+        return successResponse(res, httpStatus.OK, 'Review berhasil dihapus');
     } catch (error) {
         console.error(error.message);
-        
-        if (error.message === 'Review tidak ditemukan' || error.message.includes('tidak memiliki izin')) {
-            return res.status(httpStatus.FORBIDDEN).json({
-                status: 'error',
-                message: error.message
-            });
+
+        if (error instanceof AppError) {
+            return failResponse(res, error.statusCode, "Gagal menghapus review", error.errors.length ? error.errors : [{ field: error.field || 'reset', message: error.message }]);
         }
 
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal menghapus review'
-        });
+        return errorResponse(res);
     }
 };

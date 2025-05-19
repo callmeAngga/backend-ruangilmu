@@ -1,5 +1,7 @@
 const httpStatus = require('../constants/httpStatus');
 const moduleService = require('../services/moduleService');
+const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
+const AppError = require('../utils/appError');
 
 exports.getModulesByCourse = async (req, res) => {
     try {
@@ -8,45 +10,42 @@ exports.getModulesByCourse = async (req, res) => {
         
         const modules = await moduleService.getModulesByCourse(userId, courseId);
         
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            data: modules
-        });
+        return successResponse(res, httpStatus.OK , 'Berhasil mendapatkan modul', modules);
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal mengambil data modul'
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal mendapatkan modul",
+                [{
+                    field: error.field,
+                    message: error.message,
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
 exports.getModuleById = async (req, res) => {
     try {
+        const userId = req.user.id;
         const courseId = parseInt(req.params.courseId);
         const moduleId = parseInt(req.params.moduleId);
-        const userId = req.user.id;
         
-        // Verifikasi apakah modul sebelumnya sudah diselesaikan
         const canAccess = await moduleService.canAccessModule(userId, courseId, moduleId);
-        
         if (!canAccess.allowed) {
-            return res.status(httpStatus.FORBIDDEN).json({
-                status: 'error',
-                message: canAccess.message
-            });
+            throw new AppError(canAccess.message, httpStatus.FORBIDDEN, 'module_access');
         }
         
         const moduleData = await moduleService.getModuleWithContent(moduleId);
-        
-        if (!moduleData) {
-            return res.status(httpStatus.NOT_FOUND).json({
-                status: 'error',
-                message: 'Modul tidak ditemukan'
-            });
+        if (moduleData.length === 0) {
+            throw new AppError('Modul tidak atau belum memiliki konten untuk ditampilkan', httpStatus.NOT_FOUND, 'module_id');
         }
         
-        // Cek apakah modul sudah diselesaikan oleh pengguna
         const isCompleted = await moduleService.isModuleCompleted(userId, moduleId);
         moduleData.isCompleted = isCompleted;
         
@@ -59,16 +58,23 @@ exports.getModuleById = async (req, res) => {
             moduleData.hasQuiz = false;
         }
         
-        res.status(httpStatus.OK).json({
-            status: 'success',
-            data: moduleData
-        });
+        return successResponse(res, httpStatus.OK, 'Berhasil mendapatkan modul', moduleData);
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal mengambil detail modul'
-        });
+
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal mendapatkan modul",
+                [{
+                    field: error.field,
+                    message: error.message,
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };
 
@@ -82,10 +88,7 @@ exports.completeModule = async (req, res) => {
         const canAccess = await moduleService.canAccessModule(userId, courseId, moduleId);
         
         if (!canAccess.allowed) {
-            return res.status(httpStatus.FORBIDDEN).json({
-                status: 'error',
-                message: canAccess.message
-            });
+            throw new AppError(canAccess.message, httpStatus.FORBIDDEN, 'module_access');
         }
         
         // Cek apakah ada kuis di modul ini yang harus diselesaikan
@@ -94,10 +97,7 @@ exports.completeModule = async (req, res) => {
             const quizCompleted = await moduleService.isQuizCompleted(userId, quiz.quiz_id);
             
             if (!quizCompleted) {
-                return res.status(httpStatus.BAD_REQUEST).json({
-                    status: 'error',
-                    message: 'Anda harus menyelesaikan kuis modul terlebih dahulu'
-                });
+                throw new AppError('Anda harus menyelesaikan kuis sebelum bisa menyelesaikan modul', httpStatus.FORBIDDEN, 'quiz_completion');
             }
         }
         
@@ -107,18 +107,29 @@ exports.completeModule = async (req, res) => {
         // Cek apakah ada modul berikutnya
         const nextModule = await moduleService.getNextModule(courseId, moduleId);
         
-        res.status(httpStatus.OK).json({
-            status: 'success',
+        return successResponse(res, httpStatus.OK, 'Modul berhasil diselesaikan', {
             message: 'Modul berhasil diselesaikan',
-            data: {
-                nextModule: nextModule || null
-            }
+            nextModule: nextModule ? {
+                moduleId: nextModule.module_id,
+                moduleName: nextModule.module_name,
+                moduleOrder: nextModule.module_order
+            } : null
         });
     } catch (error) {
         console.error(error);
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: 'error',
-            message: 'Gagal menandai modul sebagai selesai'
-        });
+        
+        if (error instanceof AppError) {
+            return failResponse(
+                res,
+                error.statusCode,
+                "Gagal menyelesaikan modul",
+                [{
+                    field: error.field,
+                    message: error.message,
+                }]
+            );
+        }
+
+        return errorResponse(res);
     }
 };

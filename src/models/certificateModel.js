@@ -17,7 +17,7 @@ class Certificate {
 
     static async getCertificate(user_id, course_id) {
         const result = await db.query(
-            `SELECT c.*, u.nama as user_name, co.title as course_title
+            `SELECT c.*, u.nama as user_name, co.course_name
             FROM certificates c
             JOIN users u ON c.user_id = u.user_id
             JOIN courses co ON c.course_id = co.course_id
@@ -30,7 +30,7 @@ class Certificate {
 
     static async getAllUserCertificates(user_id) {
         const result = await db.query(
-            `SELECT c.*, co.title as course_title, c.issue_date
+            `SELECT c.*, co.course_name, c.issue_date
             FROM certificates c
             JOIN courses co ON c.course_id = co.course_id
             WHERE c.user_id = $1
@@ -41,9 +41,9 @@ class Certificate {
         return result.rows;
     }
 
-    static async verifyCertificate(certificate_number) {
+    static async verifyCertificate(certificate_number) {    
         const result = await db.query(
-            `SELECT c.*, u.name as user_name, co.title as course_title
+            `SELECT c.*, u.nama as user_name, co.course_name
             FROM certificates c
             JOIN users u ON c.user_id = u.user_id
             JOIN courses co ON c.course_id = co.course_id

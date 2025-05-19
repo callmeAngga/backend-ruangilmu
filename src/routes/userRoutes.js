@@ -2,20 +2,14 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const userController = require('../controllers/userController');
-
+const { uploadProfilePicture } = require('../middleware/uploadProfileMiddleware');
+const validateRequest = require('../middleware/validateRequestMiddleware');
+const attachUser = require('../middleware/attachUserMiddleware');
+const { changePasswordSchema } = require('../validators/authValidator');
 
 router.get('/me', authMiddleware, userController.getMe);
 router.post('/update-profile', authMiddleware, userController.updateProfile);
-
-
-// router.get('/dashboard', authMiddleware, roleMiddleware([ROLES.USER || ROLES.ADMIN]), (req, res) => {
-//     res.json({ message: 'Selamat Datang di Dashboard' });
-// }
-// );
-
-// router.get('/dashboard-admin', authMiddleware, roleMiddleware([ROLES.ADMIN]), (req, res) => {
-//     res.json({ message: 'Selamat Datang di Dashboard Admin' });
-// }
-// );
+router.post('/update-profile-picture', authMiddleware, attachUser, uploadProfilePicture, userController.updateProfilePicture);
+router.post('/change-password', authMiddleware, validateRequest(changePasswordSchema), userController.updatePassword);
 
 module.exports = router;
