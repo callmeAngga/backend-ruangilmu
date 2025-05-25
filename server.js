@@ -7,6 +7,7 @@ const reviewRoutes = require('./src/routes/reviewRoutes');
 const moduleRoutes = require('./src/routes/moduleRoutes');
 const certificateRoutes = require('./src/routes/certificateRoutes');
 const quizRoutes = require('./src/routes/quizRoutes');
+const chatbotRoutes = require('./src/routes/chatbotRoutes');
 const cookieParser = require('cookie-parser');
 const app = express();
 const cors = require('cors');
@@ -36,6 +37,7 @@ app.use('/review', reviewRoutes);
 app.use('/course', moduleRoutes);
 app.use('/course', quizRoutes); 
 app.use('/course', certificateRoutes);
+app.use('/chatbot', chatbotRoutes);
 
 // app.use('/uploads', express.static(path.join(__dirname, 'src/uploads/courses'))); 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads/')));
