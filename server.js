@@ -19,12 +19,12 @@ require('dotenv').config();
 process.removeAllListeners('warning');
 process.noDeprecation = true;
 
-// Rete limit
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Terlalu banyak permintaan, silakan coba lagi nanti.',
-});
+// // Rete limit
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100,
+//   message: 'Terlalu banyak permintaan, silakan coba lagi nanti.',
+// });
 
 // Middleware
 app.use(cors({
@@ -40,7 +40,7 @@ app.use(cookieParser());
 app.use(helmet());
 
 // Routes
-app.use('/auth', limiter, authRoutes);
+app.use('/auth', authRoutes);
 app.use('/courses', courseRoutes);
 app.use('/user', userRoutes);
 app.use('/review', reviewRoutes);
