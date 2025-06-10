@@ -31,7 +31,7 @@ const sendMessage = async (userId, courseId, message) => {
             model: "gemini-2.0-flash",
             contents: contentWithContext,
             config: {
-                maxOutputTokens: 500,
+                maxOutputTokens: 200,
                 temperature: 0.1,
                 systemInstruction: `
                     Anda adalah Pak Budi, seorang guru matematika sekolah dasar yang sabar, ramah, dan sangat menyukai anak-anak.
@@ -87,7 +87,7 @@ const summarizeModule = async (courseId, moduleId) => {
             model: "gemini-2.0-flash",
             contents: contentToSummarize,
             config: {
-                maxOutputTokens: 1000,
+                maxOutputTokens: 500,
                 temperature: 0.1,
                 systemInstruction: `
                     Anda adalah Pak Budi, guru matematika SD yang sabar dan ramah.
