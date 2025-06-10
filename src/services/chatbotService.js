@@ -1,4 +1,4 @@
-const { GoogleGenAI } = require('@google/genai');
+// const { GoogleGenAI } = require('@google/genai');
 const AppError = require('../utils/appError');
 const httpStatus = require('../constants/httpStatus');
 const ChatbotModel = require('../models/chatbotModel');

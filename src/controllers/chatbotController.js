@@ -1,4 +1,4 @@
-const chatbotService = require('../services/chatbotService');
+// const chatbotService = require('../services/chatbotService');
 const AppError = require('../utils/appError');
 const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
 const httpStatus = require('../constants/httpStatus');
