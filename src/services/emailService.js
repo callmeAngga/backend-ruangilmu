@@ -5,7 +5,7 @@ const User = require('../models/userModel');
 const { generateToken } = require('../utils/tokenUtils');
 const AppError = require('../utils/appError');
 const httpStatus = require('../constants/httpStatus');
-
+require('dotenv').config();
 
 const transporter = nodeMailer.createTransport({
     service: 'gmail',

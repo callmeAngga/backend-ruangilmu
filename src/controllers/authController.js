@@ -7,6 +7,7 @@ const { generateToken, verifyToken } = require('../utils/tokenUtils');
 const httpStatus = require('../constants/httpStatus');
 const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
 const AppError = require('../utils/appError')
+require('dotenv').config();
 
 exports.register = async (req, res) => {
     try {

@@ -5,6 +5,7 @@ const emailService = require('./emailService');
 const { failResponse } = require('../utils/responseUtil');
 const AppError = require('../utils/appError');
 const httpStatus = require('../constants/httpStatus');
+require('dotenv').config();
 const jwtSecret = process.env.JWT_SECRET;
 const path = require('path');
 const fs = require('fs');
