@@ -1,9 +1,9 @@
-const httpStatus = require('../constants/httpStatus');
-const courseService = require('../services/courseService');
-const { successResponse, errorResponse, failResponse } = require('../utils/responseUtil');
-const AppError = require('../utils/appError');
+import httpStatus from '../constants/httpStatus.js';
+import courseService from '../services/courseService.js';
+import AppError from '../utils/appError.js';
+import { successResponse, errorResponse, failResponse } from '../utils/responseUtil.js';
 
-exports.getAllCourses = async (req, res) => {
+const getAllCourses = async (req, res) => {
     try {
         const courses = await courseService.getAllCourses();
         if (!courses || courses.length === 0) {
@@ -27,7 +27,7 @@ exports.getAllCourses = async (req, res) => {
     }
 };
 
-exports.getCourseById = async (req, res) => {
+const getCourseById = async (req, res) => {
     try {
         const course_id = parseInt(req.params.courseId);
         const course = await courseService.getCourseById(course_id);
@@ -53,7 +53,7 @@ exports.getCourseById = async (req, res) => {
     }
 };
 
-exports.getCourseBySlug = async (req, res) => {
+const getCourseBySlug = async (req, res) => {
     try {;
         const course_slug = req.params.courseSlug;
         const course = await courseService.getCourseBySlug(course_slug);
@@ -79,7 +79,7 @@ exports.getCourseBySlug = async (req, res) => {
     }
 };
 
-exports.enrollCourse = async (req, res) => {
+const enrollCourse = async (req, res) => {
     try {
         const user_id = req.user.id;
         const course_id = parseInt(req.params.courseId);
@@ -127,7 +127,7 @@ exports.enrollCourse = async (req, res) => {
     }
 }
 
-exports.getEnrolledCourses = async (req, res) => {
+const getEnrolledCourses = async (req, res) => {
     try {
         const user_id = req.user.id;
         if (!user_id) {
@@ -156,7 +156,7 @@ exports.getEnrolledCourses = async (req, res) => {
     }
 };
 
-exports.checkEnrollmentStatus = async (req, res) => {
+const checkEnrollmentStatus = async (req, res) => {
     try {
         const user_id = req.user.id;
         const course_id = parseInt(req.params.courseId);
@@ -198,3 +198,12 @@ exports.checkEnrollmentStatus = async (req, res) => {
         return errorResponse(res);
     }
 }
+
+export default {
+    getAllCourses,
+    getCourseById,
+    getCourseBySlug,
+    enrollCourse,
+    getEnrolledCourses,
+    checkEnrollmentStatus
+};

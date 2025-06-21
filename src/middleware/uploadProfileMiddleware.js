@@ -1,8 +1,12 @@
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
+import fs from 'fs';
+import path from 'path';
+import multer from 'multer';
+import { fileURLToPath } from 'url';
+import httpStatus from '../constants/httpStatus.js';
+import AppError from '../utils/appError.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const uploadDir = path.join(__dirname, '../uploads/userprofile');
 if (!fs.existsSync(uploadDir)) {
@@ -40,6 +44,4 @@ const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-module.exports = {
-    uploadProfilePicture: upload.single('profile_picture')
-};
+export const uploadProfilePicture = upload.single('profile_picture');

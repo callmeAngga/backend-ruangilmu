@@ -1,12 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const adminController = require('../controllers/adminController');
-const authMiddleware = require('../middleware/authMiddleware');
-const roleMiddleware = require('../middleware/roleMiddleware');
-const ROLES = require('../constants/roles');
+import express from 'express';
+import ROLES from '../constants/roles.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+import roleMiddleware from '../middleware/roleMiddleware.js';
+import adminController from '../controllers/adminController.js';
 
-//
+const router = express.Router();
+
+// Endpoint untuk mendapatkan semua data dashboard
 router.get('/dashboard/all', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getAllDashboardData);
+
 // Endpoint untuk mendapatkan empat informasi KPI utama di dashboard admin
 // endpoint ini akan mengembalikan data KPI yang mencakup jumlah pengguna, jumlah course, rasio penyelesaian course dan total reviews
 router.get('/dashboard/kpis', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getDashboardKPIs);
@@ -29,4 +31,4 @@ router.get('/dashboard/courses-table', authMiddleware, roleMiddleware([ROLES.ADM
 // Endpoint untuk mendapatkan daftar pengguna denganperforma terbaik
 router.get('/dashboard/top-users', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getTopPerformUsers);
 
-module.exports = router;
+export default router;

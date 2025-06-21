@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
+import enrollmentMiddleware from '../middleware/enrollmentMiddleware.js';
+import certificateController from '../controllers/certificateController.js';
+
 const router = express.Router();
-const authMiddleware = require('../middleware/authMiddleware');
-const certificateController = require('../controllers/certificateController');
-const enrollmentMiddleware = require('../middleware/enrollmentMiddleware');
 
 // Endpoint ini digunakan untuk mendapatkan sertifikat dari course yang telah diselesaikan
 router.get('/:courseId/certificate', authMiddleware, enrollmentMiddleware, certificateController.getCertificate);
@@ -16,4 +17,4 @@ router.get('/certificates', authMiddleware,  certificateController.getUserCertif
 // Endpoint ini digunakan untuk mendapatkan sertifikat berdasarkan nomor sertifikat
 router.get('/certificates/verify/:certificateNumber', certificateController.verifyCertificate);
 
-module.exports = router;
+export default router;

@@ -3,4 +3,4 @@ async function getGradioClient(spaceUrl) {
     return Client.connect(spaceUrl);
 }
 
-module.exports = getGradioClient;
+export default getGradioClient;

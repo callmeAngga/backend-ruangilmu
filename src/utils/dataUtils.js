@@ -1,4 +1,4 @@
-const formatChartData = (rawData, chartType) => {
+export const formatChartData = (rawData, chartType) => {
     switch (chartType) {
         case 'line':
             return formatLineChartData(rawData);
@@ -11,7 +11,7 @@ const formatChartData = (rawData, chartType) => {
     }
 };
 
-const formatLineChartData = (rawData) => {
+export const formatLineChartData = (rawData) => {
     return {
         labels: rawData.map(item => item.label || item.month),
         datasets: [{
@@ -24,7 +24,7 @@ const formatLineChartData = (rawData) => {
     };
 };
 
-const formatBarChartData = (rawData) => {
+export const formatBarChartData = (rawData) => {
     return {
         labels: rawData.map(item => item.label || item.course_name || item.class),
         datasets: [{
@@ -34,7 +34,7 @@ const formatBarChartData = (rawData) => {
     };
 };
 
-const formatPieChartData = (rawData) => {
+export const formatPieChartData = (rawData) => {
     // Aggregate sentiment data across all courses
     const sentimentTotals = {
         positif: 0,
@@ -59,15 +59,7 @@ const formatPieChartData = (rawData) => {
     };
 };
 
-const calculatePercentage = (part, total, decimals = 2) => {
+export const calculatePercentage = (part, total, decimals = 2) => {
     if (total === 0) return 0;
     return parseFloat(((part / total) * 100).toFixed(decimals));
-};
-
-module.exports = {
-    formatChartData,
-    formatLineChartData,
-    formatBarChartData,
-    formatPieChartData,
-    calculatePercentage
 };

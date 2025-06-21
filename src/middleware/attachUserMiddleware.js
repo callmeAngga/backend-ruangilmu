@@ -1,7 +1,7 @@
-const userService = require('../services/userService');
-const { failResponse, errorResponse } = require('../utils/responseUtil');
-const httpStatus = require('../constants/httpStatus');
-const AppError = require('../utils/appError');
+import httpStatus from '../constants/httpStatus.js';
+import userService from '../services/userService.js';
+import AppError from '../utils/appError.js';
+import { failResponse, errorResponse } from '../utils/responseUtil.js';
 
 async function attachUser(req, res, next) {
     try {
@@ -30,4 +30,4 @@ async function attachUser(req, res, next) {
     }
 }
 
-module.exports = attachUser;
+export default attachUser;

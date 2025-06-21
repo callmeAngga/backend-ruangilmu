@@ -1,9 +1,9 @@
-const adminService = require('../services/adminService');
-const httpStatus = require('../constants/httpStatus');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
-const AppError = require('../utils/appError');
+import httpStatus from '../constants/httpStatus.js';
+import adminService from '../services/adminService.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
+import AppError from '../utils/appError.js';   
 
-exports.getDashboardKPIs = async (req, res) => {
+const getDashboardKPIs = async (req, res) => {
     try {
         const kpis = await adminService.getDashboardKPIs();
         return successResponse(res, httpStatus.OK, 'Dashboard KPIs retrieved successfully', kpis);
@@ -16,7 +16,7 @@ exports.getDashboardKPIs = async (req, res) => {
     }
 }
 
-exports.getUserGrowthChart = async (req, res) => {
+const getUserGrowthChart = async (req, res) => {
     try {
         const { months = 12 } = req.query;
         const chartData = await adminService.getUserGrowthChart(parseInt(months));
@@ -29,7 +29,7 @@ exports.getUserGrowthChart = async (req, res) => {
     }
 }
 
-exports.getCertificatesPerCourse = async (req, res) => {
+const getCertificatesPerCourse = async (req, res) => {
     try {
         const certificatesData = await adminService.getCertificatesPerCourse();
         return successResponse(res, httpStatus.OK, 'Certificates per course data retrieved successfully', certificatesData);
@@ -41,7 +41,7 @@ exports.getCertificatesPerCourse = async (req, res) => {
     }
 }
 
-exports.getCourseReviewsSentiment = async (req, res) => {
+const getCourseReviewsSentiment = async (req, res) => {
     try {
         const reviewsSentimentData = await adminService.getCourseReviewsSentiment();
         return successResponse(res, httpStatus.OK, 'Course reviews sentiment data retrieved successfully', reviewsSentimentData);
@@ -53,7 +53,7 @@ exports.getCourseReviewsSentiment = async (req, res) => {
     }
 }
 
-exports.getUsersPerClass = async (req, res) => {
+const getUsersPerClass = async (req, res) => {
     try {
         const usersPerClassData = await adminService.getUsersPerClass();
         return successResponse(res, httpStatus.OK, 'Users per class data retrieved successfully', usersPerClassData);
@@ -65,7 +65,7 @@ exports.getUsersPerClass = async (req, res) => {
     }
 }
 
-exports.getCourseTable = async (req, res) => {
+const getCourseTable = async (req, res) => {
     try {
         const { page = 1, limit = 10, sortBy = 'enrolled_users', sortOrder = 'asc' } = req.query;
         const coursesTableData = await adminService.getCoursesTable({
@@ -83,7 +83,7 @@ exports.getCourseTable = async (req, res) => {
     }
 }
 
-exports.getTopPerformUsers = async (req, res) => {
+const getTopPerformUsers = async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
         const topUsersData = await adminService.getTopPerformUsers({
@@ -99,7 +99,7 @@ exports.getTopPerformUsers = async (req, res) => {
     }
 }
 
-exports.getAllDashboardData = async (req, res) => {
+const getAllDashboardData = async (req, res) => {
     try {
         const dashboardData = await adminService.getAllDashboardData();
         return successResponse(res, httpStatus.OK, 'All dashboard data retrieved successfully', dashboardData);
@@ -109,4 +109,15 @@ exports.getAllDashboardData = async (req, res) => {
         }
         return errorResponse(res, httpStatus.INTERNAL_SERVER_ERROR, 'An unexpected error occurred');
     }
+}
+
+export default {
+    getDashboardKPIs,
+    getUserGrowthChart,
+    getCertificatesPerCourse,
+    getCourseReviewsSentiment,
+    getUsersPerClass,
+    getCourseTable,
+    getTopPerformUsers,
+    getAllDashboardData
 }

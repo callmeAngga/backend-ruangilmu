@@ -1,14 +1,15 @@
-const User = require('../models/userModel');
-const { generateToken, verifyToken } = require('../utils/tokenUtils');
-const { hashPassword, comparePassword } = require('../utils/passwordUtils');
-const emailService = require('./emailService');
-const { failResponse } = require('../utils/responseUtil');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
-require('dotenv').config();
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import httpStatus from '../constants/httpStatus.js';
+import User from '../models/userModel.js';        
+import emailService from './emailService.js';     
+import AppError from '../utils/appError.js';        
+import { failResponse } from '../utils/responseUtil.js';
+import { generateToken, verifyToken } from '../utils/tokenUtils.js';
+import { hashPassword, comparePassword } from '../utils/passwordUtils.js'; 
+
 const jwtSecret = process.env.JWT_SECRET;
-const path = require('path');
-const fs = require('fs');
 
 const findByEmail = async (email) => {
     return await User.findByEmail(email);
@@ -132,4 +133,14 @@ const updatePassword = async (userId, currentPassword, newPassword) => {
     return { message: 'Password berhasil diperbarui' };
 };
 
-module.exports = { findByEmail, findById, create, verifyEmail, resetPassword, updateProfile, requestPasswordReset, updateProfilePicture, updatePassword };
+export default {
+    findByEmail,
+    findById,
+    create,
+    verifyEmail,
+    resetPassword,
+    updateProfile,
+    requestPasswordReset,
+    updateProfilePicture,
+    updatePassword 
+}

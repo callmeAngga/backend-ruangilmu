@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
+import courseController from '../controllers/courseController.js';
+
 const router = express.Router();
-const courseController = require('../controllers/courseController');
-const authMiddleware = require('../middleware/authMiddleware');
 
 // Endpoint untuk mendapatkan semua course
 router.get('/', courseController.getAllCourses);
@@ -21,4 +22,4 @@ router.get('/user/enrolled', authMiddleware, courseController.getEnrolledCourses
 // Endpoint untuk cek status enrollment
 router.get('/:courseId/enrollment-status', authMiddleware, courseController.checkEnrollmentStatus);
 
-module.exports = router;
+export default router;

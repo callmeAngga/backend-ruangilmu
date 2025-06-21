@@ -1,6 +1,5 @@
-const dotenv = require("dotenv");
-dotenv.config();
-var admin = require("firebase-admin");;
+import 'dotenv/config';
+import admin from 'firebase-admin';
 
 const credentials = JSON.parse(process.env.FIREBASE_KEY);
 
@@ -10,4 +9,4 @@ if (!admin.apps.length) {
     });
   }
 
-module.exports = admin;
+export default admin;

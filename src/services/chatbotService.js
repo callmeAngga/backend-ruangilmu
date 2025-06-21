@@ -1,9 +1,8 @@
-// const { GoogleGenAI } = require('@google/genai');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
-const ChatbotModel = require('../models/chatbotModel');
-const dotenv = require('dotenv');
-dotenv.config();
+import 'dotenv/config';
+import { GoogleGenAI } from '@google/genai';
+import httpStatus from '../constants/httpStatus.js';
+import ChatbotModel from '../models/chatbotModel.js';
+import AppError from '../utils/appError.js';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEM_API_KEY });
 
@@ -116,7 +115,7 @@ const summarizeModule = async (courseId, moduleId) => {
     }
 };
 
-module.exports = {
+export default {
     sendMessage,
     summarizeModule,
 };

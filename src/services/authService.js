@@ -1,10 +1,10 @@
-const User = require('../models/userModel');
-const { comparePassword } = require('../utils/passwordUtils');
-const { generateToken } = require('../utils/tokenUtils');
-const admin = require('../config/firebaseConfig');
-const { hashPassword } = require('../utils/passwordUtils');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
+import admin from '../config/firebaseConfig.js';
+import httpStatus from '../constants/httpStatus.js';
+import User from '../models/userModel.js';
+import AppError from '../utils/appError.js';
+import { comparePassword } from '../utils/passwordUtils.js';
+import { generateToken } from '../utils/tokenUtils.js';
+import { hashPassword } from '../utils/passwordUtils.js';
 
 // Fungsi untuk login user
 // Fungsi ini akan memeriksa apakah email sudah terdaftar, apakah user sudah terverifikasi, dan apakah password yang dimasukkan sesuai dengan password yang ada di database
@@ -97,6 +97,10 @@ const getUserByFirebaseUid = async (firebaseUid) => {
         throw new AppError('User not found', httpStatus.NOT_FOUND, 'firebaseUid');
     }
     return user;
-}
+};
 
-module.exports = { login, loginFirebase, getUserByFirebaseUid };
+export default {
+    login,
+    loginFirebase,
+    getUserByFirebaseUid
+}

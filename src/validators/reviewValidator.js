@@ -1,8 +1,6 @@
-const zod = require('zod');
+import { z } from 'zod';
 
-const { z } = require('zod')
-
-const reviewContentSchema = zod.object({
+export const reviewContentSchema = z.object({
     content: z
         .string()
         .min(3, { message: "Review minimal 3 karakter"})
@@ -12,7 +10,3 @@ const reviewContentSchema = zod.object({
             {message: "Hanya huruf, angka, spasi, dan tanda baca standar (.,!?()'\"-) yang diperbolehkan. Emoji, simbol khusus, dan huruf non-Latin tidak diizinkan."}
         )
 });
-
-module.exports = {
-    reviewContentSchema
-};

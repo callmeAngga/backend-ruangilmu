@@ -1,10 +1,10 @@
-const db = require('../db');
+import { query } from '../db/index.js';
 
 class Certificate {
     static async createCertificate(user_id, course_id, final_score) {
         const certificateNumber = this.generateCertificateNumber();
         
-        const result = await db.query(
+        const result = await query(
             `INSERT INTO certificates 
             (user_id, course_id, certificate_number, final_score, issue_date)
             VALUES ($1, $2, $3, $4, NOW())
@@ -16,7 +16,7 @@ class Certificate {
     }
 
     static async getCertificate(user_id, course_id) {
-        const result = await db.query(
+        const result = await query(
             `SELECT c.*, u.nama as user_name, co.course_name
             FROM certificates c
             JOIN users u ON c.user_id = u.user_id
@@ -29,7 +29,7 @@ class Certificate {
     }
 
     static async getAllUserCertificates(user_id) {
-        const result = await db.query(
+        const result = await query(
             `SELECT c.*, co.course_name, c.issue_date
             FROM certificates c
             JOIN courses co ON c.course_id = co.course_id
@@ -42,7 +42,7 @@ class Certificate {
     }
 
     static async verifyCertificate(certificate_number) {    
-        const result = await db.query(
+        const result = await query(
             `SELECT c.*, u.nama as user_name, co.course_name
             FROM certificates c
             JOIN users u ON c.user_id = u.user_id
@@ -72,4 +72,4 @@ class Certificate {
     }
 }
 
-module.exports = Certificate;
+export default Certificate;

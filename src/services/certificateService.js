@@ -1,4 +1,4 @@
-const Certificate = require('../models/certificateModel');
+import Certificate from '../models/certificateModel.js';
 
 const createCertificate = async (userId, courseId, finalScore) => {
     return await Certificate.createCertificate(userId, courseId, finalScore);
@@ -16,9 +16,9 @@ const verifyCertificate = async (certificateNumber) => {
     return await Certificate.verifyCertificate(certificateNumber);
 };
 
-module.exports = {
+export default {
     createCertificate,
     getCertificate,
     getUserCertificates,
     verifyCertificate
-};
+}

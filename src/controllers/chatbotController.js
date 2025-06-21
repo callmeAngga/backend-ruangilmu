@@ -1,11 +1,10 @@
-// const chatbotService = require('../services/chatbotService');
-const AppError = require('../utils/appError');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
-const httpStatus = require('../constants/httpStatus');
-
+import httpStatus from '../constants/httpStatus.js';
+import chatbotService from '../services/chatbotService.js';
+import AppError from '../utils/appError.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
 
 // Fungsi untuk mengirim pesan ke chatbot
-exports.sendMessage = async (req, res) => {
+const sendMessage = async (req, res) => {
     try {
         const courseId = parseInt(req.params.courseId);
         const userId = req.user.id;
@@ -40,7 +39,7 @@ exports.sendMessage = async (req, res) => {
 }
 
 // Controller untuk merangkum materi modul
-exports.summarize = async (req, res) => {
+const summarize = async (req, res) => {
     try {
         const courseId = parseInt(req.params.courseId);
         const { moduleId } = req.body;
@@ -72,3 +71,8 @@ exports.summarize = async (req, res) => {
         return errorResponse(res);
     }
 }
+
+export default {
+    sendMessage,
+    summarize
+};
