@@ -1,10 +1,11 @@
-const express = require('express');
+import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
+import enrollmentMiddleware from '../middleware/enrollmentMiddleware.js';
+import validateRequest from '../middleware/validateRequestMiddleware.js';
+import reviewController from '../controllers/reviewController.js';
+import { reviewContentSchema } from '../validators/reviewValidator.js';
+
 const router = express.Router();
-const reviewController = require('../controllers/reviewController');
-const authMiddleware = require('../middleware/authMiddleware');
-const enrollmentMiddleware = require('../middleware/enrollmentMiddleware');
-const validateRequest = require('../middleware/validateRequestMiddleware');
-const { reviewContentSchema } = require('../validators/reviewValidator');
 
 // Endpoint untuk menambahkan review baru
 router.post('/', authMiddleware, validateRequest(reviewContentSchema), reviewController.createReview);
@@ -21,4 +22,4 @@ router.put('/update/:reviewId', authMiddleware, validateRequest(reviewContentSch
 // Endpoint untuk menghapus review
 router.delete('/delete/:reviewId', authMiddleware, reviewController.deleteReview);
 
-module.exports = router;
+export default router;

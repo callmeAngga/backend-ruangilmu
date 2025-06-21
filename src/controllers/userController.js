@@ -1,9 +1,9 @@
-const httpStatus = require('../constants/httpStatus');
-const userService = require('../services/userService');
-const AppError = require('../utils/appError');
-const { failResponse, successResponse, errorResponse } = require('../utils/responseUtil');
+import httpStatus from '../constants/httpStatus.js';
+import userService from '../services/userService.js';
+import AppError from '../utils/appError.js';
+import { failResponse, successResponse, errorResponse } from '../utils/responseUtil.js';
 
-exports.getMe = async (req, res) => {
+const getMe = async (req, res) => {
     try {
         const user = await userService.findById(req.user.id);
         if (!user) {
@@ -29,7 +29,7 @@ exports.getMe = async (req, res) => {
     }
 };
 
-exports.updateProfile = async (req, res) => {
+const updateProfile = async (req, res) => {
     try {
         const userId = req.user.id;
         if (!userId) {
@@ -62,7 +62,7 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
-exports.updateProfilePicture = async (req, res) => {
+const updateProfilePicture = async (req, res) => {
     try {
         const userId = req.user.id;
         const profilePicture = req.file.filename;
@@ -88,7 +88,7 @@ exports.updateProfilePicture = async (req, res) => {
     }
 }
 
-exports.updatePassword = async (req, res) => {
+const updatePassword = async (req, res) => {
     try {
         const userId = req.user.id;
         const { currentPassword, newPassword } = req.body;
@@ -110,4 +110,11 @@ exports.updatePassword = async (req, res) => {
         
         return errorResponse(res);
     }
+};
+
+export default {
+    getMe,
+    updateProfile,
+    updateProfilePicture,
+    updatePassword
 };

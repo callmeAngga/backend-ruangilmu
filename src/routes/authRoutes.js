@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
+import validateRequest from '../middleware/validateRequestMiddleware.js';
+import authController from '../controllers/authController.js';
+import { registerSchema, loginSchema, resetPasswordSchema } from '../validators/authValidator.js';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
-const authMiddleware = require('../middleware/authMiddleware');
-const validateRequest = require('../middleware/validateRequestMiddleware');
-const { registerSchema, loginSchema, resetPasswordSchema } = require('../validators/authValidator');
 
 // Endpoint untuk registrasi pengguna baru
 // Endpoint ini akan memvalidasi data yang diterima dan menyimpan pengguna baru ke dalam database
@@ -41,4 +42,4 @@ router.post('/reset-password', validateRequest(resetPasswordSchema), authControl
 // Endpoint ini akan menghapus refresh token dari database
 router.post('/logout', authMiddleware, authController.logout);
 
-module.exports = router;
+export default router;

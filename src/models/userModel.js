@@ -1,13 +1,13 @@
-const db = require('../db');
+import { query } from '../db/index.js';
 
 class User {
     static async create(nama, email, password, role = "user", isVerified = false) {
-        const result = await db.query('INSERT INTO users (nama, email, password, role, isVerified) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, nama, email, role, isVerified, created_at', [nama, email, password, role, isVerified]);
+        const result = await query('INSERT INTO users (nama, email, password, role, isVerified) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, nama, email, role, isVerified, created_at', [nama, email, password, role, isVerified]);
         return result.rows[0];
     }
 
     static async findByEmail(email) {
-        const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        const result = await query('SELECT * FROM users WHERE email = $1', [email]);
         return result.rows[0];
     }
 
@@ -26,17 +26,17 @@ class User {
             RETURNING user_id, nama, email, tanggal_lahir, kelas, created_at, updated_at
         `;
         
-        const result = await db.query(query, [userId]);
+        const result = await query(query, [userId]);
         return result.rows[0];
     }
 
     static async findById(id) {
-        const result = await db.query('SELECT * FROM users WHERE user_id = $1', [id]);
+        const result = await query('SELECT * FROM users WHERE user_id = $1', [id]);
         return result.rows[0];
     }
 
     static async verifyEmail(userId) {
-        const result = await db.query(
+        const result = await query(
             'UPDATE users SET isVerified = true WHERE user_id = $1 RETURNING *',
             [userId]
         );
@@ -44,7 +44,7 @@ class User {
     }
 
     static async updateFirebaseUid(userId, firebaseUid) {
-        const result = await db.query(
+        const result = await query(
             'UPDATE users SET firebase_uid = $1, isverified = true WHERE user_id = $2 RETURNING *',
             [firebaseUid, userId]
         );
@@ -52,12 +52,12 @@ class User {
     }
 
     static async findByFirebaseUid(firebaseUid) {
-        const result = await db.query('SELECT * FROM users WHERE firebase_uid = $1', [firebaseUid]);
+        const result = await query('SELECT * FROM users WHERE firebase_uid = $1', [firebaseUid]);
         return result.rows[0];
     }
 
     static async updatePassword(userId, newPassword) {
-        const result = await db.query(
+        const result = await query(
             'UPDATE users SET password = $1 WHERE user_id = $2 RETURNING user_id',
             [newPassword, userId]
         );
@@ -65,7 +65,7 @@ class User {
     }
 
     static async updateProfilePicture(userId, profilePicture) {
-        const result = await db.query(
+        const result = await query(
             'UPDATE users SET user_profile = $1 WHERE user_id = $2 RETURNING *',
             [profilePicture, userId]
         );
@@ -73,4 +73,4 @@ class User {
     }
 }
 
-module.exports = User;
+export default User;

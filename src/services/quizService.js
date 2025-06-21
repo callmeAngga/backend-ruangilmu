@@ -1,7 +1,7 @@
-const Quiz = require('../models/quizModel');
-const Certificate = require('../models/certificateModel');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
+import httpStatus from '../constants/httpStatus.js';
+import Quiz from '../models/quizModel.js';
+import Certificate from '../models/certificateModel.js';
+import AppError from '../utils/appError.js';
 
 const getQuizByModule = async (moduleId) => {
     const quiz = await Quiz.getQuizByModuleId(moduleId);
@@ -118,7 +118,7 @@ const createCertificate = async (userId, courseId, finalScore) => {
     return await Certificate.createCertificate(userId, courseId, finalScore);
 };
 
-module.exports = {
+export default {
     getQuizByModule,
     getFinalExam,
     getQuizResult,

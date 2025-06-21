@@ -1,5 +1,5 @@
-const httpStatus = require('../constants/httpStatus');
-const { failResponse } = require('../utils/responseUtil');
+import httpStatus from '../constants/httpStatus.js';
+import { failResponse } from '../utils/responseUtil.js';
 
 const roleMiddleware = (roles) => {
     return (req, res, next) => {
@@ -27,4 +27,4 @@ const roleMiddleware = (roles) => {
     };
 };
 
-module.exports = roleMiddleware;
+export default roleMiddleware;

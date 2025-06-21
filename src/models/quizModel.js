@@ -1,13 +1,13 @@
-const db = require('../db');
+import { query } from '../db/index.js';
 
 class Quiz {
     static async getQuizByModuleId(module_id) {
-        const result = await db.query('SELECT * FROM quizzes WHERE module_id = $1', [module_id]);
+        const result = await query('SELECT * FROM quizzes WHERE module_id = $1', [module_id]);
         return result.rows[0];
     }
 
     static async getFinalExamByCourseId(course_id) {
-        const result = await db.query(
+        const result = await query(
             'SELECT * FROM quizzes WHERE course_id = $1 AND is_final_exam = true',
             [course_id]
         );
@@ -15,7 +15,7 @@ class Quiz {
     }
 
     static async getQuizQuestions(quiz_id) {
-        const result = await db.query(
+        const result = await query(
             'SELECT * FROM quiz_questions WHERE quiz_id = $1 ORDER BY question_order',
             [quiz_id]
         );
@@ -23,7 +23,7 @@ class Quiz {
     }
 
     static async getQuestionOptions(question_id) {
-        const result = await db.query(
+        const result = await query(
             'SELECT * FROM quiz_options WHERE question_id = $1 ORDER BY option_order',
             [question_id]
         );
@@ -31,7 +31,7 @@ class Quiz {
     }
 
     static async saveQuizResult(user_id, quiz_id, score, passed) {
-        const result = await db.query(
+        const result = await query(
             `INSERT INTO user_quiz_results 
             (user_id, quiz_id, score, passed, completed_at)
             VALUES ($1, $2, $3, $4, NOW())
@@ -44,7 +44,7 @@ class Quiz {
     }
 
     static async getQuizResult(user_id, quiz_id) {
-        const result = await db.query(
+        const result = await query(
             'SELECT * FROM user_quiz_results WHERE user_id = $1 AND quiz_id = $2',
             [user_id, quiz_id]
         );
@@ -52,7 +52,7 @@ class Quiz {
     }
 
     static async checkQuizCompletion(user_id, quiz_id) {
-        const result = await db.query(
+        const result = await query(
             'SELECT * FROM user_quiz_results WHERE user_id = $1 AND quiz_id = $2 AND passed = true',
             [user_id, quiz_id]
         );
@@ -60,11 +60,11 @@ class Quiz {
     }
 
     static async getQuizWithQuestionsAndOptions(quiz_id) {
-        const quizResult = await db.query('SELECT * FROM quizzes WHERE quiz_id = $1', [quiz_id]);
+        const quizResult = await query('SELECT * FROM quizzes WHERE quiz_id = $1', [quiz_id]);
         const quiz = quizResult.rows[0];
 
         // Get questions
-        const questionsResult = await db.query(
+        const questionsResult = await query(
             'SELECT * FROM quiz_questions WHERE quiz_id = $1 ORDER BY question_order',
             [quiz_id]
         );
@@ -72,7 +72,7 @@ class Quiz {
         
         // Get options for each question
         for (let question of questions) {
-            const optionsResult = await db.query(
+            const optionsResult = await query(
                 'SELECT quiz_option_id, option_text, option_order FROM quiz_options WHERE question_id = $1 ORDER BY option_order',
                 [question.question_id]
             );
@@ -84,4 +84,4 @@ class Quiz {
     }
 }
 
-module.exports = Quiz;
+export default Quiz;

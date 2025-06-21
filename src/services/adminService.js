@@ -1,7 +1,8 @@
-const Admin = require('../models/adminModel');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
-const { formatChartData, calculatePercentage } = require('../utils/dataUtils');
+import httpStatus from '../constants/httpStatus.js';
+import Admin from '../models/adminModel.js';
+import AppError from '../utils/appError.js';
+import { formatChartData, calculatePercentage } from '../utils/dataUtils.js';
+
 const getDashboardKPIs = async () => {
     try {
         const [
@@ -30,7 +31,7 @@ const getDashboardKPIs = async () => {
         console.error('Error retrieving dashboard KPIs:', error);
         throw new AppError('Failed to retrieve dashboard KPIs', httpStatus.INTERNAL_SERVER_ERROR, 'dashboard');
     }
-}
+};
 
 const getUserGrowthChart = async (months = 12) => {
     try {
@@ -39,7 +40,7 @@ const getUserGrowthChart = async (months = 12) => {
     } catch (error) {
         throw new AppError('Failed to retrieve user growth chart', httpStatus.INTERNAL_SERVER_ERROR, 'userGrowth');
     }
-}
+};
 
 const getCertificatesPerCourse = async () => {
     try {
@@ -48,7 +49,7 @@ const getCertificatesPerCourse = async () => {
     } catch (error) {
         throw new AppError('Failed to retrieve certificates per course', httpStatus.INTERNAL_SERVER_ERROR, 'certificates');
     }
-}
+};
 
 const getCourseReviewsSentiment = async () => {
     try {
@@ -57,7 +58,7 @@ const getCourseReviewsSentiment = async () => {
     } catch (error) {
         throw new AppError('Failed to retrieve course reviews sentiment', httpStatus.INTERNAL_SERVER_ERROR, 'reviewsSentiment');
     }
-}
+};
 
 const getUsersPerClass = async () => {
     try {
@@ -66,7 +67,7 @@ const getUsersPerClass = async () => {
     } catch (error) {
         throw new AppError('Failed to retrieve users per class', httpStatus.INTERNAL_SERVER_ERROR, 'usersPerClass');
     }
-}
+};
 
 const getCoursesTable = async (options) => {
     try {
@@ -100,7 +101,7 @@ const getCoursesTable = async (options) => {
         console.error('Error retrieving courses table:', error);
         throw new AppError('Failed to retrieve courses table', httpStatus.INTERNAL_SERVER_ERROR, 'coursesTable');
     }
-}
+};
 
 const getTopPerformUsers = async (options) => {
     try {
@@ -125,7 +126,7 @@ const getTopPerformUsers = async (options) => {
     } catch (error) {
         throw new AppError('Failed to retrieve top performing users', httpStatus.INTERNAL_SERVER_ERROR, 'topPerformUsers');
     }
-}
+};
 
 const getAllDashboardData = async () => {
     try {
@@ -163,9 +164,9 @@ const getAllDashboardData = async () => {
     } catch (error) {
         throw new AppError('Failed to retrieve all dashboard data', httpStatus.INTERNAL_SERVER_ERROR, 'allDashboardData');
     }
-}
+};
 
-module.exports = {
+export default {
     getDashboardKPIs,
     getUserGrowthChart,
     getCertificatesPerCourse,
@@ -174,4 +175,4 @@ module.exports = {
     getCoursesTable,
     getTopPerformUsers,
     getAllDashboardData
-};
+}

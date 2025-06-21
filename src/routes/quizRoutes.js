@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
+import enrollmentMiddleware from '../middleware/enrollmentMiddleware.js';
+import quizController from '../controllers/quizController.js';
+
 const router = express.Router();
-const quizController = require('../controllers/quizController');
-const authMiddleware = require('../middleware/authMiddleware');
-const enrollmentMiddleware = require('../middleware/enrollmentMiddleware');
 
 // Endpoin ini digunakan untuk mendapatkan kuis yang terkait dengan modul tertentu dalam kursus
 // Endpoin ini juga mengembalikan hasil kuis sebelumnya jika ada
@@ -23,4 +24,4 @@ router.get('/:courseId/final-exam', authMiddleware, enrollmentMiddleware, quizCo
 // Jika ujian akhir sudah selesai sebelumnya, maka hasilnya akan diambil dari database
 router.post('/:courseId/final-exam/submit', authMiddleware, enrollmentMiddleware, quizController.submitFinalExam);
 
-module.exports = router;
+export default router;

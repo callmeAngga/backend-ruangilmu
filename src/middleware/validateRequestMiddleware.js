@@ -1,5 +1,5 @@
-const { ZodError } = require('zod');
-const { failResponse, errorResponse } = require('../utils/responseUtil');
+import { ZodError } from 'zod';
+import { failResponse, errorResponse } from '../utils/responseUtil.js';
 
 const validateRequest = (schema) => (req, res, next) => {
     try {
@@ -18,4 +18,4 @@ const validateRequest = (schema) => (req, res, next) => {
     }
 };
 
-module.exports = validateRequest;
+export default validateRequest;

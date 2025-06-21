@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import authMiddleware from '../middleware/authMiddleware.js';
+import enrollmentMiddleware from '../middleware/enrollmentMiddleware.js';
+import moduleController from '../controllers/moduleController.js';
+
 const router = express.Router();
-const moduleController = require('../controllers/moduleController');
-const authMiddleware = require('../middleware/authMiddleware');
-const enrollmentMiddleware = require('../middleware/enrollmentMiddleware');
 
 // Endpoint untuk mendapatkan semua module berdasarkan course_id
 router.get('/:courseId/module', authMiddleware, moduleController.getModulesByCourse);
@@ -14,4 +15,4 @@ router.get('/:courseId/module/:moduleId', authMiddleware, enrollmentMiddleware, 
 // Endpoint untuk merubah status modul menjadi selesai untuk user
 router.post('/:courseId/module/:moduleId/complete', authMiddleware, enrollmentMiddleware, moduleController.completeModule);
 
-module.exports = router;
+export default router;

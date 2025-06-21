@@ -1,14 +1,17 @@
-const httpStatus = require('../constants/httpStatus');
-const certificateService = require('../services/certificateService');
-const moduleService = require('../services/moduleService');
-const quizService = require('../services/quizService');
-const AppError = require('../utils/appError');
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
+import fs from 'fs';
+import path from 'path';
+import PDFDocument from 'pdfkit';
+import { fileURLToPath } from 'url';
+import httpStatus from '../constants/httpStatus.js';
+import certificateService from '../services/certificateService.js';
+import quizService from '../services/quizService.js';
+import AppError from '../utils/appError.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
 
-exports.getCertificate = async (req, res) => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const getCertificate = async (req, res) => {
     try {
         const userId = req.user.id;
         const courseId = parseInt(req.params.courseId);
@@ -56,7 +59,7 @@ exports.getCertificate = async (req, res) => {
     }
 };
 
-exports.downloadCertificate = async (req, res) => {
+const downloadCertificate = async (req, res) => {
     try {
         const courseId = parseInt(req.params.courseId);
         const userId = req.user.id;
@@ -179,6 +182,10 @@ exports.downloadCertificate = async (req, res) => {
     } catch (error) {
         console.error(error);
 
+        if (error.stack) {
+            console.error(error.stack);
+        }
+
         if (error instanceof AppError) {
             return failResponse(
                 res,
@@ -195,7 +202,7 @@ exports.downloadCertificate = async (req, res) => {
     }
 };
 
-exports.getUserCertificates = async (req, res) => {
+const getUserCertificates = async (req, res) => {
     try {
         const userId = req.user.id;
         const certificates = await certificateService.getUserCertificates(userId);
@@ -206,7 +213,7 @@ exports.getUserCertificates = async (req, res) => {
         return successResponse(res, httpStatus.OK, "Sertifikat berhasil diambil", certificates);
     } catch (error) {
         console.error(error);
-        
+
         if (error instanceof AppError) {
             return failResponse(
                 res,
@@ -223,7 +230,7 @@ exports.getUserCertificates = async (req, res) => {
     }
 };
 
-exports.verifyCertificate = async (req, res) => {
+const verifyCertificate = async (req, res) => {
     try {
         const certificateNumber = req.params.certificateNumber;
         const certificate = await certificateService.verifyCertificate(certificateNumber);
@@ -244,7 +251,7 @@ exports.verifyCertificate = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        
+
         if (error instanceof AppError) {
             return failResponse(
                 res,
@@ -259,4 +266,11 @@ exports.verifyCertificate = async (req, res) => {
 
         return errorResponse(res);
     }
+};
+
+export default {
+    verifyCertificate,
+    getCertificate,
+    downloadCertificate,
+    getUserCertificates
 };

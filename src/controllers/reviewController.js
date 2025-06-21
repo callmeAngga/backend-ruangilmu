@@ -1,9 +1,9 @@
-const httpStatus = require('../constants/httpStatus');
-const reviewService = require('../services/reviewService');
-const AppError = require('../utils/appError');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
+import httpStatus from '../constants/httpStatus.js';
+import reviewService from '../services/reviewService.js';
+import AppError from '../utils/appError.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
 
-exports.createReview = async (req, res) => {
+const createReview = async (req, res) => {
     try {
         const { course_id, content } = req.body;
         const user_id = req.user.id;
@@ -30,7 +30,7 @@ exports.createReview = async (req, res) => {
     }
 };
 
-exports.getReviewsByCourse = async (req, res) => {
+const getReviewsByCourse = async (req, res) => {
     try {
         const user_id = req.user.id;
         if (!user_id) {
@@ -63,7 +63,7 @@ exports.getReviewsByCourse = async (req, res) => {
     }
 };
 
-exports.getUserReviewForCourse = async (req, res) => {
+const getUserReviewForCourse = async (req, res) => {
     try {
         const user_id = req.user.id;
         const course_id = parseInt(req.params.courseId);
@@ -90,7 +90,7 @@ exports.getUserReviewForCourse = async (req, res) => {
     }
 };
 
-exports.updateReview = async (req, res) => {
+const updateReview = async (req, res) => {
     try {
         const review_id = parseInt(req.params.reviewId);
         const user_id = req.user.id;
@@ -121,7 +121,7 @@ exports.updateReview = async (req, res) => {
     }
 };
 
-exports.deleteReview = async (req, res) => {
+const deleteReview = async (req, res) => {
     try {
         const review_id = parseInt(req.params.reviewId);
         const user_id = req.user.id;
@@ -155,4 +155,12 @@ exports.deleteReview = async (req, res) => {
 
         return errorResponse(res);
     }
+};
+
+export default {
+    getReviewsByCourse,
+    getUserReviewForCourse,
+    createReview,
+    updateReview,
+    deleteReview
 };

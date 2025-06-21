@@ -1,11 +1,19 @@
-const fs = require('fs');
-const nodeMailer = require('nodemailer');
-const emailTemplate = fs.readFileSync('src/utils/verificationEmail.html', 'utf8');
-const User = require('../models/userModel');
-const { generateToken } = require('../utils/tokenUtils');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
-require('dotenv').config();
+import 'dotenv/config';
+import fs from 'fs';
+import nodeMailer from 'nodemailer';
+import httpStatus from '../constants/httpStatus.js';
+import User from '../models/userModel.js';
+import AppError from '../utils/appError.js';
+import { generateToken } from '../utils/tokenUtils.js';
+
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const emailTemplatePath = path.join(__dirname, '../utils/verificationEmail.html');
+const emailTemplate = fs.readFileSync(emailTemplatePath, 'utf8');
 
 const transporter = nodeMailer.createTransport({
     service: 'gmail',
@@ -66,4 +74,8 @@ const sendResetPasswordEmail = async (to, nama, linkReset) => {
     return transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendVerificationEmail, resendVerificationEmail, sendResetPasswordEmail };
+export default {
+    sendVerificationEmail,
+    resendVerificationEmail,
+    sendResetPasswordEmail
+}

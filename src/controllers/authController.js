@@ -1,15 +1,15 @@
-const { isProduction, frontendUrl } = require('../config/appConfig');
-const userService = require('../services/userService');
-const authService = require('../services/authService');
-const emailService = require('../services/emailService');
-const { hashPassword } = require('../utils/passwordUtils');
-const { generateToken, verifyToken } = require('../utils/tokenUtils');
-const httpStatus = require('../constants/httpStatus');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
-const AppError = require('../utils/appError')
-require('dotenv').config();
+import 'dotenv/config';
+import httpStatus from '../constants/httpStatus.js';
+import { isProduction, frontendUrl } from '../config/appConfig.js';
+import userService from '../services/userService.js';
+import authService from '../services/authService.js';
+import emailService from '../services/emailService.js';
+import { hashPassword } from '../utils/passwordUtils.js';
+import { generateToken, verifyToken } from '../utils/tokenUtils.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
+import AppError from '../utils/appError.js';
 
-exports.register = async (req, res) => {
+const register = async (req, res) => {
     try {
         const { nama, email, password } = req.body;
 
@@ -54,7 +54,7 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
+const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const { user, accessToken, refreshToken } = await authService.login(email, password);
@@ -115,7 +115,7 @@ exports.login = async (req, res) => {
     }
 };
 
-exports.logout = (req, res) => {
+const logout = (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
 
@@ -155,7 +155,7 @@ exports.logout = (req, res) => {
     }
 };
 
-exports.verifyEmail = async (req, res) => {
+const verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
 
@@ -178,7 +178,7 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
-exports.resendVerificationEmail = async (req, res) => {
+const resendVerificationEmail = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -210,7 +210,7 @@ exports.resendVerificationEmail = async (req, res) => {
     }
 };
 
-exports.refreshToken = async (req, res) => {
+const refreshToken = async (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
 
@@ -269,7 +269,7 @@ exports.refreshToken = async (req, res) => {
     }
 };
 
-exports.oauthGoogle = async (req, res) => {
+const oauthGoogle = async (req, res) => {
     try {
         const { idToken } = req.body;
 
@@ -327,7 +327,7 @@ exports.oauthGoogle = async (req, res) => {
     }
 };
 
-exports.forgotPassword = async (req, res) => {
+const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
 
@@ -359,7 +359,7 @@ exports.forgotPassword = async (req, res) => {
     }
 };
 
-exports.resetPassword = async (req, res) => {
+const resetPassword = async (req, res) => {
     try {
         const { token } = req.query;
         const { password } = req.body;
@@ -407,4 +407,19 @@ exports.resetPassword = async (req, res) => {
 
         return errorResponse(res);
     }
+};
+
+export default {
+    register,
+    login,
+    logout,
+    verifyEmail,
+    resendVerificationEmail,
+    refreshToken,
+    oauthGoogle,    
+    forgotPassword,
+    verifyEmail,
+    resendVerificationEmail,
+    refreshToken,    
+    resetPassword
 };

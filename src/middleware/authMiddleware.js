@@ -1,8 +1,8 @@
-const { jwtSecret } = require('../config/appConfig');
-const httpStatus = require('../constants/httpStatus');
-const admin = require('../config/firebaseConfig');
-const { verifyToken } = require('../utils/tokenUtils');
-const { failResponse, errorResponse } = require('../utils/responseUtil');
+import admin from '../config/firebaseConfig.js';
+import httpStatus from '../constants/httpStatus.js';
+import { jwtSecret } from '../config/appConfig.js';
+import { verifyToken } from '../utils/tokenUtils.js';
+import { failResponse, errorResponse } from '../utils/responseUtil.js';
 
 const authMiddleware = async (req, res, next) => {
     try {
@@ -43,4 +43,4 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
-module.exports = authMiddleware;
+export default authMiddleware;

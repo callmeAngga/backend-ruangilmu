@@ -1,6 +1,6 @@
-const { z } = require('zod');
+import { z } from 'zod';
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
     nama: z
         .string()
         .min(1, { message: 'Nama tidak boleh kosong' })
@@ -29,7 +29,7 @@ const registerSchema = z.object({
     path: ['confirmPassword'],
 });
 
-const loginSchema = z.object({
+export const loginSchema = z.object({
     email: z
         .string()
         .email({ message: 'Format email tidak valid' }),
@@ -39,7 +39,7 @@ const loginSchema = z.object({
         .min(8),
 });
 
-const resetPasswordSchema = z.object({
+export const resetPasswordSchema = z.object({
     password: z
         .string()
         .min(8, { message: 'Password minimal 8 karakter' })
@@ -54,7 +54,7 @@ const resetPasswordSchema = z.object({
     path: ['confirmPassword'],
 });
 
-const changePasswordSchema = z.object({
+export const changePasswordSchema = z.object({
     currentPassword: z
         .string()
         .min(8)
@@ -73,5 +73,3 @@ const changePasswordSchema = z.object({
     message: 'Password dan konfirmasi password harus sama',
     path: ['confirmPassword'],
 });
-
-module.exports = { registerSchema, loginSchema, resetPasswordSchema, changePasswordSchema };

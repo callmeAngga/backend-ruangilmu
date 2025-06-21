@@ -1,8 +1,8 @@
-const Module = require('../models/moduleModel');
-const Course = require('../models/courseModel');
-const Quiz = require('../models/quizModel');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
+import httpStatus from '../constants/httpStatus.js';
+import Quiz from '../models/quizModel.js';
+import Module from '../models/moduleModel.js';
+import Course from '../models/courseModel.js';
+import AppError from '../utils/appError.js';
 
 const getModulesByCourse = async (userId, courseId) => {
     const course = await Course.getCourseById(courseId);
@@ -95,7 +95,7 @@ const getAllModulesCompletion = async (userId, courseId) => {
     return await Module.getAllCompletedModules(userId, courseId);
 };
 
-module.exports = {
+export default {
     getModulesByCourse,
     getModuleWithContent,
     canAccessModule,

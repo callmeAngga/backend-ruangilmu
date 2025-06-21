@@ -1,10 +1,10 @@
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
-const quizService = require('../services/quizService');
-const moduleService = require('../services/moduleService');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
+import httpStatus from '../constants/httpStatus.js';
+import quizService from '../services/quizService.js';
+import moduleService from '../services/moduleService.js';
+import AppError from '../utils/appError.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
 
-exports.getModuleQuiz = async (req, res) => {
+const getModuleQuiz = async (req, res) => {
     try {
         const userId = req.user.id;
         const courseId = parseInt(req.params.courseId);
@@ -73,7 +73,7 @@ exports.getModuleQuiz = async (req, res) => {
     }
 };
 
-exports.submitModuleQuiz = async (req, res) => {
+const submitModuleQuiz = async (req, res) => {
     try {
         const userId = req.user.id;
         const courseId = parseInt(req.params.courseId);
@@ -123,7 +123,7 @@ exports.submitModuleQuiz = async (req, res) => {
     }
 };
 
-exports.getFinalExam = async (req, res) => {
+const getFinalExam = async (req, res) => {
     try {
         const courseId = parseInt(req.params.courseId);
         const userId = req.user.id;
@@ -191,7 +191,7 @@ exports.getFinalExam = async (req, res) => {
     }
 };
 
-exports.submitFinalExam = async (req, res) => {
+const submitFinalExam = async (req, res) => {
     try {
         const userId = req.user.id;
         const courseId = parseInt(req.params.courseId);
@@ -247,4 +247,11 @@ exports.submitFinalExam = async (req, res) => {
 
         return errorResponse(res);
     }
+};
+
+export default {
+    getModuleQuiz,
+    submitModuleQuiz,
+    getFinalExam,
+    submitFinalExam
 };

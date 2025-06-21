@@ -1,9 +1,9 @@
-const httpStatus = require('../constants/httpStatus');
-const moduleService = require('../services/moduleService');
-const { successResponse, failResponse, errorResponse } = require('../utils/responseUtil');
-const AppError = require('../utils/appError');
+import httpStatus from '../constants/httpStatus.js';
+import moduleService from '../services/moduleService.js';
+import AppError from '../utils/appError.js';
+import { successResponse, failResponse, errorResponse } from '../utils/responseUtil.js';
 
-exports.getModulesByCourse = async (req, res) => {
+const getModulesByCourse = async (req, res) => {
     try {
         const courseId = parseInt(req.params.courseId);
         const userId = req.user.id;
@@ -30,7 +30,7 @@ exports.getModulesByCourse = async (req, res) => {
     }
 };
 
-exports.getModuleById = async (req, res) => {
+const getModuleById = async (req, res) => {
     try {
         const userId = req.user.id;
         const courseId = parseInt(req.params.courseId);
@@ -78,7 +78,7 @@ exports.getModuleById = async (req, res) => {
     }
 };
 
-exports.completeModule = async (req, res) => {
+const completeModule = async (req, res) => {
     try {
         const courseId = parseInt(req.params.courseId);
         const moduleId = parseInt(req.params.moduleId);
@@ -132,4 +132,10 @@ exports.completeModule = async (req, res) => {
 
         return errorResponse(res);
     }
+};
+
+export default {
+    getModulesByCourse,
+    getModuleById,
+    completeModule
 };

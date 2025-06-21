@@ -1,7 +1,7 @@
-const httpStatus = require('../constants/httpStatus');
-const courseService = require('../services/courseService');
-const AppError = require('../utils/appError');
-const { errorResponse, failResponse } = require('../utils/responseUtil');
+import httpStatus from '../constants/httpStatus.js';
+import courseService from '../services/courseService.js';
+import AppError from '../utils/appError.js';
+import { errorResponse, failResponse } from '../utils/responseUtil.js';
 
 const checkEnrollment = async (req, res, next) => {
     try {
@@ -42,4 +42,4 @@ const checkEnrollment = async (req, res, next) => {
     }
 };
 
-module.exports = checkEnrollment
+export default checkEnrollment;

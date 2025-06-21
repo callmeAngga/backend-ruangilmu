@@ -1,7 +1,7 @@
-const httpStatus = require('../constants/httpStatus');
+import httpStatus from '../constants/httpStatus.js';
 
 // Template untuk response sukses
-exports.successResponse = (res, code, message, data) => {
+export const successResponse = (res, code, message, data) => {
   return res.status(code).json({
     status: 'success',
     code,
@@ -11,7 +11,7 @@ exports.successResponse = (res, code, message, data) => {
 };
 
 // Template untuk response gagal (validasi, bad request)
-exports.failResponse = (res, code, message, errors) => {
+export const failResponse = (res, code, message, errors) => {
   return res.status(code).json({
     status: 'fail',
     code,
@@ -21,7 +21,7 @@ exports.failResponse = (res, code, message, errors) => {
 };
 
 // Template untuk response error (server error)
-exports.errorResponse = (res, code = httpStatus.INTERNAL_SERVER_ERROR , message = 'Terjadi kesalahan pada server', errors = []) => {
+export const errorResponse = (res, code = httpStatus.INTERNAL_SERVER_ERROR , message = 'Terjadi kesalahan pada server', errors = []) => {
   return res.status(code).json({
     status: 'error',
     code,

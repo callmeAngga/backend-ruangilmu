@@ -1,8 +1,8 @@
-const Review = require('../models/reviewModel');
-const Course = require('../models/courseModel');
-const AppError = require('../utils/appError');
-const httpStatus = require('../constants/httpStatus');
-const getGradioClient = require('../utils/gradioClient');
+import httpStatus from '../constants/httpStatus.js';
+import Review from '../models/reviewModel.js';
+import Course from '../models/courseModel.js';
+import AppError from '../utils/appError.js';
+import getGradioClient from '../utils/gradioClient.js';
 
 const createReview = async (user_id, course_id, content) => {
     const isEnrolled = await Course.checkUserEnrollment(user_id, course_id);
@@ -68,9 +68,6 @@ const getUserReviewForCourse = async (user_id, course_id) => {
 };
 
 const analyzeSentiment = async (review_id) => {
-    // Fungsi ini akan diimplementasikan nanti untuk integrasi dengan model AI
-    // Placeholder untuk saat ini
-
     const review = await Review.getReviewById(review_id);
     if (!review) {
         throw new AppError('Review tidak ditemukan', httpStatus.NOT_FOUND, 'review');
@@ -111,7 +108,7 @@ const analyzeSentiment = async (review_id) => {
     return sentiment;
 };
 
-module.exports = {
+export default {
     createReview,
     getReviewById,
     getReviewsByUserId,

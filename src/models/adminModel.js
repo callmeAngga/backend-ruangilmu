@@ -1,26 +1,21 @@
-const db = require('../db');
-
+import { query } from '../db/index.js';
 class Admin {
     static async getTotalUsers() {
-        const query = 'SELECT COUNT(*) as total FROM users WHERE role = $1';
-        const result = await db.query(query, ['user']);
+        const result = await query('SELECT COUNT(*) as total FROM users WHERE role = $1', ['user']);
         return parseInt(result.rows[0].total);
     }
 
     static async getTotalCourses() {
-        const query = 'SELECT COUNT(*) as total FROM courses';
-        const result = await db.query(query);
+        const result = await query('SELECT COUNT(*) as total FROM courses');
         return parseInt(result.rows[0].total);
     }
 
     static async getCourseCompletionRatio() {
-        const query = `
-            SELECT 
-                COUNT(*) as total
-            FROM certificates
-        `;
 
-        const result = await db.query(query);
+        const result = await query(`
+            SELECT COUNT(*) as total
+            FROM certificates
+        `);
         const totalFinish = parseInt(result.rows[0].total);
 
         if (totalFinish === 0) return 0;
@@ -28,15 +23,13 @@ class Admin {
     }
 
     static async getReviewStats() {
-        const query = `
+        const result = await query(`
             SELECT 
                 COUNT(*) as total,
                 COUNT(CASE WHEN sentiment = 'positif' THEN 1 END) as positive,
                 COUNT(CASE WHEN sentiment = 'negatif' THEN 1 END) as negative
             FROM reviews
-        `;
-
-        const result = await db.query(query);
+        `);
         const stats = result.rows[0];
 
         return {
@@ -48,7 +41,7 @@ class Admin {
     }
 
     static async getUserGrowthByMonth(months = 12) {
-        const query = `
+        const result = await query(`
             SELECT 
                 DATE_TRUNC('month', created_at) as month,
                 COUNT(*) as user_count
@@ -57,8 +50,7 @@ class Admin {
                 AND created_at >= NOW() - INTERVAL '${months} months'
             GROUP BY DATE_TRUNC('month', created_at)
             ORDER BY month ASC
-        `;
-        const result = await db.query(query);
+        `);
 
         return result.rows.map(row => ({
             month: row.month.toISOString().substring(0, 7),
@@ -71,7 +63,7 @@ class Admin {
     }
 
     static async getCertificatesPerCourse() {
-        const query = `
+        const result = await query(`
             SELECT 
                 c.course_name,
                 COUNT(cert.certificate_id) as certificate_count
@@ -79,8 +71,7 @@ class Admin {
             LEFT JOIN certificates cert ON c.course_id = cert.course_id
             GROUP BY c.course_id, c.course_name
             ORDER BY certificate_count DESC
-        `;
-        const result = await db.query(query);
+        `);
 
         return result.rows.map(row => ({
             course_name: row.course_name,
@@ -90,7 +81,7 @@ class Admin {
     }
 
     static async getReviewsSentimentByCourse() {
-        const query = `
+        const result = await query(`
             SELECT 
                 c.course_name,
                 r.sentiment,
@@ -100,8 +91,7 @@ class Admin {
             WHERE r.sentiment IS NOT NULL
             GROUP BY c.course_name, r.sentiment
             ORDER BY c.course_name, r.sentiment
-        `;
-        const result = await db.query(query);
+        `);
 
         const groupedData = {};
         result.rows.forEach(row => {
@@ -120,7 +110,7 @@ class Admin {
     }
 
     static async getUsersPerClass() {
-        const query = `
+        const result = await query(`
             SELECT 
                 kelas,
                 COUNT(*) as user_count
@@ -128,8 +118,7 @@ class Admin {
             WHERE role = 'user' AND kelas IS NOT NULL
             GROUP BY kelas
             ORDER BY kelas ASC
-        `;
-        const result = await db.query(query);
+        `);
 
         return result.rows.map(row => ({
             class: `Kelas ${row.kelas}`,
@@ -149,7 +138,8 @@ class Admin {
 
         const sortColumn = validSortColumns[sortBy] || 'enrolled_users';
         const order = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
-        const query = `
+
+        const result = await query(`
             SELECT 
                 ROW_NUMBER() OVER (ORDER BY ${sortColumn} ${order}) as no,
                 course_name,
@@ -171,9 +161,7 @@ class Admin {
             ) AS course_stats
             ORDER BY ${sortColumn} ${order}
             LIMIT $1 OFFSET $2
-        `;
-
-        const result = await db.query(query, [limit, offset]);
+        `, [limit, offset]);
         return result.rows.map(row => ({
             no: parseInt(row.no),
             course_name: row.course_name,
@@ -185,13 +173,12 @@ class Admin {
     }
 
     static async getTotalCoursesCount() {
-        const query = 'SELECT COUNT(*) as total FROM courses';
-        const result = await db.query(query);
+        const result = await query('SELECT COUNT(*) as total FROM courses');
         return parseInt(result.rows[0].total);
     }
 
     static async getTopPerformUsersData(limit, offset) {
-        const query = `
+        const result = await query(`
             SELECT 
                 ROW_NUMBER() OVER (ORDER BY completed_courses DESC, total_enrollments DESC) as no,
                 nama,
@@ -210,9 +197,7 @@ class Admin {
             ) AS user_stats
             ORDER BY completed_courses DESC, total_enrollments DESC
             LIMIT $1 OFFSET $2
-        `;
-
-        const result = await db.query(query, [limit, offset]);
+        `, [limit, offset]);
         return result.rows.map(row => ({
             no: parseInt(row.no),
             nama: row.nama,
@@ -222,15 +207,14 @@ class Admin {
     }
 
     static async getTotalUsersCount() {
-        const query = `
+        const result = await query(`
             SELECT COUNT(DISTINCT u.user_id) as total 
             FROM users u
             LEFT JOIN enrollments e ON u.user_id = e.user_id
             WHERE u.role = 'user' AND e.course_id IS NOT NULL
-        `;
-        const result = await db.query(query);
+        `);
         return parseInt(result.rows[0].total);
     }
 }
 
-module.exports = Admin;
+export default Admin;
