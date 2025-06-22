@@ -31,4 +31,25 @@ router.get('/dashboard/courses-table', authMiddleware, roleMiddleware([ROLES.ADM
 // Endpoint untuk mendapatkan daftar pengguna denganperforma terbaik
 router.get('/dashboard/top-users', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getTopPerformUsers);
 
+// endpoint untuk manajamen course
+router.get('/courses', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getAllCourses);
+router.get('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getCourseById);
+router.post('/courses', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.createCourse);
+router.put('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.updateCourse);
+router.delete('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.deleteCourse);
+
+// endpoint untuk manajamen module
+router.get('/courses/:courseId/modules', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getModulesByCourse);
+router.get('/modules/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getModuleById);
+router.post('/courses/:courseId/modules', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.createModule);
+router.put('/modules/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.updateModule);
+router.delete('/modules/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.deleteModule);
+
+// endpoint untuk manajamen content
+router.get('/modules/:moduleId/contents', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getContentsByModule);
+router.get('/contents/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getContentById);
+router.post('/modules/:moduleId/contents', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.createContent);
+router.put('/contents/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.updateContent);
+router.delete('/contents/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.deleteContent);
+
 export default router;

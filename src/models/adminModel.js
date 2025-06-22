@@ -215,6 +215,364 @@ class Admin {
         `);
         return parseInt(result.rows[0].total);
     }
+
+    static async getAllCourses() {
+        const sqlQuery = `
+            SELECT
+                course_id,
+                course_name,
+                course_description,
+                course_image_profile,
+                course_image_cover,
+                course_price,
+                course_slug,
+                created_at,
+                updated_at
+            FROM courses
+            ORDER BY created_at DESC
+        `;
+
+        const result = await query(sqlQuery);
+        return result.rows;
+    }
+
+    static async getCourseById(courseId) {
+        const sqlQuery = `
+            SELECT
+                course_id,
+                course_name,
+                course_description,
+                course_image_profile,
+                course_image_cover,
+                course_price,
+                course_slug,
+                created_at,
+                updated_at
+            FROM courses
+            WHERE course_id = $1
+        `;
+
+        const result = await query(sqlQuery, [courseId]);
+        return result.rows[0] || null;
+    }
+
+    static async createCourse(courseData) {
+        const {
+            course_name,
+            course_description,
+            course_image_profile,
+            course_image_cover,
+            course_price,
+            course_slug
+        } = courseData;
+
+        const sqlQuery = `
+            INSERT INTO courses (
+                course_name,
+                course_description,
+                course_image_profile,
+                course_image_cover,
+                course_price,
+                course_slug
+            )
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `;
+
+        const result = await query(sqlQuery, [
+            course_name,
+            course_description,
+            course_image_profile,
+            course_image_cover,
+            course_price,
+            course_slug
+        ]);
+
+        return result.rows[0];
+    }
+
+    static async updateCourse(courseId, courseData) {
+        const fields = [];
+        const values = [];
+        let paramCount = 1;
+
+        Object.entries(courseData).forEach(([key, value]) => {
+            if (value !== undefined && key !== 'course_id') {
+                fields.push(`${key} = $${paramCount}`);
+                values.push(value);
+                paramCount++;
+            }
+        });
+
+        if (fields.length === 0) {
+            return await this.getCourseById(courseId);
+        }
+
+        fields.push('updated_at = CURRENT_TIMESTAMP');
+        values.push(courseId);
+
+        const sqlQuery = `
+            UPDATE courses
+            SET ${fields.join(', ')}
+            WHERE course_id = $${paramCount}
+            RETURNING *
+        `;
+
+        const result = await query(sqlQuery, values);
+        return result.rows[0] || null;
+    }
+
+    static async deleteCourse(courseId) {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            await client.query('DELETE FROM certificates WHERE course_id = $1', [courseId]);
+            await client.query('DELETE FROM user_quiz_results WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE course_id = $1)', [courseId]);
+            await client.query('DELETE FROM quiz_options WHERE question_id IN (SELECT question_id FROM quiz_questions WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE course_id = $1))', [courseId]);
+            await client.query('DELETE FROM quiz_questions WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE course_id = $1)', [courseId]);
+            await client.query('DELETE FROM quizzes WHERE course_id = $1', [courseId]);
+            await client.query('DELETE FROM user_module_progress WHERE module_id IN (SELECT module_id FROM modules WHERE course_id = $1)', [courseId]);
+            await client.query('DELETE FROM module_contents WHERE module_id IN (SELECT module_id FROM modules WHERE course_id = $1)', [courseId]);
+            await client.query('DELETE FROM modules WHERE course_id = $1', [courseId]);
+            await client.query('DELETE FROM reviews WHERE course_id = $1', [courseId]);
+            await client.query('DELETE FROM enrollments WHERE course_id = $1', [courseId]);
+
+            const result = await client.query('DELETE FROM courses WHERE course_id = $1 RETURNING *', [courseId]);
+
+            await client.query('COMMIT');
+            return result.rows[0] || null;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async getModulesByCourse(courseId) {
+        const sqlQuery = `
+            SELECT
+                module_id,
+                course_id,
+                title,
+                description,
+                module_order,
+                created_at,
+                updated_at
+            FROM modules
+            WHERE course_id = $1
+            ORDER BY module_order ASC
+        `;
+
+        const result = await query(sqlQuery, [courseId]);
+        return result.rows;
+    }
+
+    static async getModuleById(moduleId) {
+        const sqlQuery = `
+            SELECT
+                module_id,
+                course_id,
+                title,
+                description,
+                module_order,
+                created_at,
+                updated_at
+            FROM modules
+            WHERE module_id = $1
+        `;
+
+        const result = await query(sqlQuery, [moduleId]);
+        return result.rows[0] || null;
+    }
+
+    static async createModule(moduleData) {
+        const {
+            course_id,
+            title,
+            description,
+            module_order
+        } = moduleData;
+
+        const sqlQuery = `
+            INSERT INTO modules (
+                course_id,
+                title,
+                description,
+                module_order
+            )
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+
+        const result = await query(sqlQuery, [
+            course_id,
+            title,
+            description,
+            module_order
+        ]);
+
+        return result.rows[0];
+    }
+
+    static async updateModule(moduleId, moduleData) {
+        const fields = [];
+        const values = [];
+        let paramCount = 1;
+
+        Object.entries(moduleData).forEach(([key, value]) => {
+            if (value !== undefined && key !== 'module_id') {
+                fields.push(`${key} = $${paramCount}`);
+                values.push(value);
+                paramCount++;
+            }
+        });
+
+        if (fields.length === 0) {
+            return await this.getModuleById(moduleId);
+        }
+
+        fields.push('updated_at = CURRENT_TIMESTAMP');
+        values.push(moduleId);
+
+        const sqlQuery = `
+            UPDATE modules
+            SET ${fields.join(', ')}
+            WHERE module_id = $${paramCount}
+            RETURNING *
+        `;
+
+        const result = await query(sqlQuery, values);
+        return result.rows[0] || null;
+    }
+
+    static async deleteModule(moduleId) {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            await client.query('DELETE FROM user_quiz_results WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE module_id = $1)', [moduleId]);
+            await client.query('DELETE FROM quiz_options WHERE question_id IN (SELECT question_id FROM quiz_questions WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE module_id = $1))', [moduleId]);
+            await client.query('DELETE FROM quiz_questions WHERE quiz_id IN (SELECT quiz_id FROM quizzes WHERE module_id = $1)', [moduleId]);
+            await client.query('DELETE FROM quizzes WHERE module_id = $1', [moduleId]);
+            await client.query('DELETE FROM user_module_progress WHERE module_id = $1', [moduleId]);
+            await client.query('DELETE FROM module_contents WHERE module_id = $1', [moduleId]);
+
+            const result = await client.query('DELETE FROM modules WHERE module_id = $1 RETURNING *', [moduleId]);
+
+            await client.query('COMMIT');
+            return result.rows[0] || null;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async getContentsByModule(moduleId) {
+        const sqlQuery = `
+            SELECT
+                content_id,
+                module_id,
+                content_type,
+                content,
+                content_order,
+                created_at,
+                updated_at
+            FROM module_contents
+            WHERE module_id = $1
+            ORDER BY content_order ASC
+        `;
+
+        const result = await query(sqlQuery, [moduleId]);
+        return result.rows;
+    }
+
+    static async getContentById(contentId) {
+        const sqlQuery = `
+            SELECT
+                content_id,
+                module_id,
+                content_type,
+                content,
+                content_order,
+                created_at,
+                updated_at
+            FROM module_contents
+            WHERE content_id = $1
+        `;
+
+        const result = await query(sqlQuery, [contentId]);
+        return result.rows[0] || null;
+    }
+
+    static async createContent(contentData) {
+        const {
+            module_id,
+            content_type,
+            content,
+            content_order
+        } = contentData;
+
+        const sqlQuery = `
+            INSERT INTO module_contents (
+                module_id,
+                content_type,
+                content,
+                content_order
+            )
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+
+        const result = await query(sqlQuery, [
+            module_id,
+            content_type,
+            content,
+            content_order
+        ]);
+
+        return result.rows[0];
+    }
+
+    static async updateContent(contentId, contentData) {
+        const fields = [];
+        const values = [];
+        let paramCount = 1;
+
+        Object.entries(contentData).forEach(([key, value]) => {
+            if (value !== undefined && key !== 'content_id') {
+                fields.push(`${key} = $${paramCount}`);
+                values.push(value);
+                paramCount++;
+            }
+        });
+
+        if (fields.length === 0) {
+            return await this.getContentById(contentId);
+        }
+
+        fields.push('updated_at = CURRENT_TIMESTAMP');
+        values.push(contentId);
+
+        const sqlQuery = `
+            UPDATE module_contents
+            SET ${fields.join(', ')}
+            WHERE content_id = $${paramCount}
+            RETURNING *
+        `;
+
+        const result = await query(sqlQuery, values);
+        return result.rows[0] || null;
+    }
+
+    static async deleteContent(contentId) {
+        const sqlQuery = 'DELETE FROM module_contents WHERE content_id = $1 RETURNING *';
+        const result = await query(sqlQuery, [contentId]);
+        return result.rows[0] || null;
+    }
 }
 
 export default Admin;

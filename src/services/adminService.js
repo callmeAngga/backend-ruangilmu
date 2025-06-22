@@ -28,7 +28,6 @@ const getDashboardKPIs = async () => {
             }
         };
     } catch (error) {
-        console.error('Error retrieving dashboard KPIs:', error);
         throw new AppError('Failed to retrieve dashboard KPIs', httpStatus.INTERNAL_SERVER_ERROR, 'dashboard');
     }
 };
@@ -98,7 +97,6 @@ const getCoursesTable = async (options) => {
             }
         }
     } catch (error) {
-        console.error('Error retrieving courses table:', error);
         throw new AppError('Failed to retrieve courses table', httpStatus.INTERNAL_SERVER_ERROR, 'coursesTable');
     }
 };
@@ -166,6 +164,101 @@ const getAllDashboardData = async () => {
     }
 };
 
+const getAllCourses = async () => {
+    return await Admin.getAllCourses();
+}
+
+const getCourseById = async (courseId) => {
+    return await Admin.getCourseById(courseId);
+}
+
+const createCourse = async (courseData) => {
+    return await Admin.createCourse(courseData);
+}
+
+const updateCourse = async (courseId, courseData) => {
+    return await Admin.updateCourse(courseId, courseData);
+}
+
+const deleteCourse = async (courseId) => {
+    const course = await Admin.getCourseById(courseId);
+    if (!course) {
+        return null;
+    }
+
+    return await Admin.deleteCourse(courseId);
+}
+
+const getModulesByCourse = async (courseId) => {
+    const course = await Admin.getCourseById(courseId); 
+    if (!course) {
+        throw new AppError('Failed to retrieve modules by course', httpStatus.NOT_FOUND, 'course');
+    }
+
+    return await Admin.getModulesByCourse(courseId);
+}
+
+const getModuleById = async (moduleId) => {
+    return await Admin.getModuleById(moduleId);
+}
+
+const createModule = async (moduleData) => {
+    const course = await Admin.getCourseById(moduleData.course_id); 
+    if (!course) {
+        throw new AppError('Failed to create module', httpStatus.NOT_FOUND, 'course');
+    }
+
+    return await Admin.createModule(moduleData);
+}
+
+const updateModule = async (moduleId, moduleData) => {
+    return await Admin.updateModule(moduleId, moduleData);
+}
+
+const deleteModule = async (moduleId) => {
+    const module = await Admin.getModuleById(moduleId);
+    if (!module) {
+        return null;
+    }
+
+    return await Admin.deleteModule(moduleId);
+}
+
+const getContentsByModule = async (moduleId) => {
+    const module = await Admin.getModuleById(moduleId);
+    if (!module) {
+        throw new AppError('Failed to retrieve contents by module', httpStatus.NOT_FOUND, 'module');
+    }
+
+    return await Admin.getContentsByModule(moduleId);
+}
+
+const getContentById = async (contentId) => {
+    return await Admin.getContentById(contentId);
+}
+
+const createContent = async (contentData) => {
+    const module = await Admin.getModuleById(contentData.module_id);
+    if (!module) {
+        throw new AppError('Failed to create content', httpStatus.NOT_FOUND, 'module');
+    }
+
+    return await Admin.createContent(contentData);
+}
+
+const updateContent = async (contentId, contentData) => {
+    return await Admin.updateContent(contentId, contentData);
+}
+
+const deleteContent = async (contentId) => {
+    const content = await Admin.getContentById(contentId);
+    if (!content) {
+        return null;
+    }
+
+    return await Admin.deleteContent(contentId);
+}
+
 export default {
     getDashboardKPIs,
     getUserGrowthChart,
@@ -174,5 +267,20 @@ export default {
     getUsersPerClass,
     getCoursesTable,
     getTopPerformUsers,
-    getAllDashboardData
+    getAllDashboardData,
+    getAllCourses,
+    getCourseById,
+    createCourse,
+    updateCourse,
+    deleteCourse,
+    getModulesByCourse,
+    getModuleById,
+    createModule,
+    updateModule,
+    deleteModule,
+    getContentsByModule,
+    getContentById,
+    createContent,
+    updateContent,
+    deleteContent
 }
