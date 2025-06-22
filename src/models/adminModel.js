@@ -216,24 +216,46 @@ class Admin {
         return parseInt(result.rows[0].total);
     }
 
-    static async getAllCourses() {
-        const sqlQuery = `
-            SELECT
-                course_id,
-                course_name,
-                course_description,
-                course_image_profile,
-                course_image_cover,
-                course_price,
-                course_slug,
-                created_at,
-                updated_at
-            FROM courses
-            ORDER BY created_at DESC
+    static async getAllCourses(limit, offset, search = '') {
+        let sqlQuery = `
+            SELECT 
+                c.*,
+                COUNT(DISTINCT e.enrolment_id) as enrollment_count,
+                COUNT(DISTINCT m.module_id) as module_count
+            FROM courses c
+            LEFT JOIN enrollments e ON c.course_id = e.course_id
+            LEFT JOIN modules m ON c.course_id = m.course_id
         `;
 
-        const result = await query(sqlQuery);
+        const params = [];
+        if (search) {
+            sqlQuery += ' WHERE LOWER(c.course_name) LIKE LOWER($1) OR LOWER(c.course_description) LIKE LOWER($1)';
+            params.push(`%${search}%`);
+        }
+
+        sqlQuery += `
+            GROUP BY c.course_id
+            ORDER BY c.created_at DESC
+            LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        `;
+
+        params.push(limit, offset);
+
+        const result = await query(sqlQuery, params);
         return result.rows;
+    }
+
+    static async getCoursesCount(search = '') {
+        let sqlQuery = 'SELECT COUNT(*) FROM courses';
+        const params = [];
+
+        if (search) {
+            sqlQuery += ' WHERE LOWER(course_name) LIKE LOWER($1) OR LOWER(course_description) LIKE LOWER($1)';
+            params.push(`%${search}%`);
+        }
+
+        const result = await query(sqlQuery, params);
+        return parseInt(result.rows[0].count);
     }
 
     static async getCourseById(courseId) {

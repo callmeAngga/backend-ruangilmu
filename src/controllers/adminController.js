@@ -112,7 +112,7 @@ const getAllDashboardData = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
     try {
-        const { page = 1, limit = 10, search = '' } = req.query;
+        const { page = 1, limit = 6, search = '' } = req.query;
         const courses = await adminService.getAllCourses(parseInt(page), parseInt(limit), search);
         return successResponse(res, httpStatus.OK, 'Daftar kursus berhasil diambil', courses);
     } catch (error) {

@@ -164,8 +164,22 @@ const getAllDashboardData = async () => {
     }
 };
 
-const getAllCourses = async () => {
-    return await Admin.getAllCourses();
+const getAllCourses = async (page = 1, limit = 6, search = '') => {
+    const offset = (page - 1) * limit;
+    const courses = await Admin.getAllCourses(limit, offset, search);
+    const totalCount = await Admin.getCoursesCount(search);
+
+    return {
+        data: courses,
+        pagination: {
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / limit),
+            totalItems: totalCount,
+            itemsPerPage: limit,
+            hasNextPage: page < Math.ceil(totalCount / limit),
+            hasPrevPage: page > 1
+        }
+    };
 }
 
 const getCourseById = async (courseId) => {
@@ -190,7 +204,7 @@ const deleteCourse = async (courseId) => {
 }
 
 const getModulesByCourse = async (courseId) => {
-    const course = await Admin.getCourseById(courseId); 
+    const course = await Admin.getCourseById(courseId);
     if (!course) {
         throw new AppError('Failed to retrieve modules by course', httpStatus.NOT_FOUND, 'course');
     }
@@ -203,7 +217,7 @@ const getModuleById = async (moduleId) => {
 }
 
 const createModule = async (moduleData) => {
-    const course = await Admin.getCourseById(moduleData.course_id); 
+    const course = await Admin.getCourseById(moduleData.course_id);
     if (!course) {
         throw new AppError('Failed to create module', httpStatus.NOT_FOUND, 'course');
     }
