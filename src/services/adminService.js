@@ -1,7 +1,11 @@
+import fs from 'fs';
+import path from 'path';
 import httpStatus from '../constants/httpStatus.js';
 import Admin from '../models/adminModel.js';
 import AppError from '../utils/appError.js';
+import { uploadDir, deleteFileIfExists } from '../middleware/uploadCourseMiddleware.js';
 import { formatChartData, calculatePercentage } from '../utils/dataUtils.js';
+
 
 const getDashboardKPIs = async () => {
     try {
@@ -186,12 +190,118 @@ const getCourseById = async (courseId) => {
     return await Admin.getCourseById(courseId);
 }
 
-const createCourse = async (courseData) => {
-    return await Admin.createCourse(courseData);
+const createCourse = async (courseData, files) => {
+    console.log("Masuk createCourse");
+    const { course_name, course_description, course_price, course_slug, status = 'pending' } = courseData;
+
+    let course_image_profile_name = null;
+    let course_image_cover_name = null;
+
+    // Generate unique filename components untuk create course
+    const firstWordCourseName = course_name.split(' ')[0].toLowerCase();
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 5); // 3 karakter random
+
+    try {
+        // Process profile image jika ada
+        if (files && files.course_image_profile && files.course_image_profile[0]) {
+            const oldProfilePath = files.course_image_profile[0].path;
+            const profileExtension = path.extname(files.course_image_profile[0].originalname);
+            course_image_profile_name = `${firstWordCourseName}-profile-${timestamp}-${randomSuffix}${profileExtension}`;
+            const newProfilePath = path.join(uploadDir, course_image_profile_name);
+            fs.renameSync(oldProfilePath, newProfilePath);
+        }
+
+        // Process cover image jika ada
+        if (files && files.course_image_cover && files.course_image_cover[0]) {
+            const oldCoverPath = files.course_image_cover[0].path;
+            const coverExtension = path.extname(files.course_image_cover[0].originalname);
+            course_image_cover_name = `${firstWordCourseName}-cover-${timestamp}-${randomSuffix}${coverExtension}`;
+            const newCoverPath = path.join(uploadDir, course_image_cover_name);
+            fs.renameSync(oldCoverPath, newCoverPath);
+        }
+
+        // Data untuk disimpan ke database
+        const dataToSave = {
+            course_name,
+            course_description,
+            course_price,
+            course_slug,
+            status,
+            course_image_profile: course_image_profile_name, // null jika tidak ada file
+            course_image_cover: course_image_cover_name      // null jika tidak ada file
+        };
+
+        const newCourse = await Admin.createCourse(dataToSave);
+        return newCourse;
+
+    } catch (error) {
+        // Cleanup files jika terjadi error
+        if (course_image_profile_name) deleteFileIfExists(course_image_profile_name);
+        if (course_image_cover_name) deleteFileIfExists(course_image_cover_name);
+        throw new AppError('Gagal memproses gambar atau membuat kursus.', httpStatus.INTERNAL_SERVER_ERROR, 'file_upload', error.message);
+    }
 }
 
-const updateCourse = async (courseId, courseData) => {
-    return await Admin.updateCourse(courseId, courseData);
+const updateCourse = async (courseId, courseData, files) => {
+    const existingCourse = await Admin.getCourseById(courseId);
+    if (!existingCourse) {
+        throw new AppError('Kursus tidak ditemukan.', httpStatus.NOT_FOUND, 'course_id');
+    }
+
+    const { course_name } = courseData;
+    let updatedCourseData = { ...courseData };
+    let profileImageToUpdate = existingCourse.course_image_profile;
+    let coverImageToUpdate = existingCourse.course_image_cover;
+
+    const firstWordCourseName = (course_name || existingCourse.course_name).split(' ')[0].toLowerCase();
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 5);
+
+    try {
+        // Update profile image jika ada file baru
+        if (files && files.course_image_profile && files.course_image_profile[0]) {
+            // Hapus file lama jika ada
+            if (existingCourse.course_image_profile) {
+                deleteFileIfExists(existingCourse.course_image_profile);
+            }
+
+            const oldProfilePath = files.course_image_profile[0].path;
+            const profileExtension = path.extname(files.course_image_profile[0].originalname);
+            profileImageToUpdate = `${firstWordCourseName}-profile-${timestamp}-${randomSuffix}${profileExtension}`;
+            const newProfilePath = path.join(uploadDir, profileImageToUpdate);
+            fs.renameSync(oldProfilePath, newProfilePath);
+            updatedCourseData.course_image_profile = profileImageToUpdate;
+        }
+
+        // Update cover image jika ada file baru
+        if (files && files.course_image_cover && files.course_image_cover[0]) {
+            // Hapus file lama jika ada
+            if (existingCourse.course_image_cover) {
+                deleteFileIfExists(existingCourse.course_image_cover);
+            }
+
+            const oldCoverPath = files.course_image_cover[0].path;
+            const coverExtension = path.extname(files.course_image_cover[0].originalname);
+            coverImageToUpdate = `${firstWordCourseName}-cover-${timestamp}-${randomSuffix}${coverExtension}`;
+            const newCoverPath = path.join(uploadDir, coverImageToUpdate);
+            fs.renameSync(oldCoverPath, newCoverPath);
+            updatedCourseData.course_image_cover = coverImageToUpdate;
+        }
+
+        const updatedCourse = await Admin.updateCourse(courseId, updatedCourseData);
+        return updatedCourse;
+
+    } catch (error) {
+        // Cleanup files baru jika terjadi error
+        if (files && files.course_image_profile && files.course_image_profile[0] && profileImageToUpdate !== existingCourse.course_image_profile) {
+            deleteFileIfExists(profileImageToUpdate);
+        }
+        if (files && files.course_image_cover && files.course_image_cover[0] && coverImageToUpdate !== existingCourse.course_image_cover) {
+            deleteFileIfExists(coverImageToUpdate);
+        }
+        throw new AppError('Gagal mengupdate kursus atau memproses gambar.', httpStatus.INTERNAL_SERVER_ERROR, 'server', error.message);
+    }
 }
 
 const deleteCourse = async (courseId) => {

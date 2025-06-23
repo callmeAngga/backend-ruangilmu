@@ -31,6 +31,7 @@ const getMe = async (req, res) => {
 
 const updateProfile = async (req, res) => {
     try {
+        console.log(req.user);
         const userId = req.user.id;
         if (!userId) {
             throw new AppError('User ID tidak ditemukan', httpStatus.UNAUTHORIZED, 'user');

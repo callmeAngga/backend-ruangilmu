@@ -260,18 +260,7 @@ class Admin {
 
     static async getCourseById(courseId) {
         const sqlQuery = `
-            SELECT
-                course_id,
-                course_name,
-                course_description,
-                course_image_profile,
-                course_image_cover,
-                course_price,
-                course_slug,
-                created_at,
-                updated_at
-            FROM courses
-            WHERE course_id = $1
+            SELECT * FROM courses WHERE course_id = $1
         `;
 
         const result = await query(sqlQuery, [courseId]);
@@ -282,24 +271,28 @@ class Admin {
         const {
             course_name,
             course_description,
-            course_image_profile,
-            course_image_cover,
+            course_image_profile = 'default-profile.png',
+            course_image_cover = 'default-cover.png', 
             course_price,
-            course_slug
+            course_slug,
+            status
         } = courseData;
 
         const sqlQuery = `
-            INSERT INTO courses (
-                course_name,
-                course_description,
-                course_image_profile,
-                course_image_cover,
-                course_price,
-                course_slug
-            )
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING *
-        `;
+        INSERT INTO courses (
+            course_name,
+            course_description,
+            course_image_profile,
+            course_image_cover,
+            course_price,
+            course_slug,
+            status,
+            created_at,
+            updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        RETURNING *
+    `;
 
         const result = await query(sqlQuery, [
             course_name,
@@ -307,7 +300,8 @@ class Admin {
             course_image_profile,
             course_image_cover,
             course_price,
-            course_slug
+            course_slug,
+            status
         ]);
 
         return result.rows[0];
@@ -334,11 +328,11 @@ class Admin {
         values.push(courseId);
 
         const sqlQuery = `
-            UPDATE courses
-            SET ${fields.join(', ')}
-            WHERE course_id = $${paramCount}
-            RETURNING *
-        `;
+        UPDATE courses
+        SET ${fields.join(', ')}
+        WHERE course_id = $${paramCount}
+        RETURNING *
+    `;
 
         const result = await query(sqlQuery, values);
         return result.rows[0] || null;

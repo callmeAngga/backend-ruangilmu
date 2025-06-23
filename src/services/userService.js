@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import httpStatus from '../constants/httpStatus.js';
 import User from '../models/userModel.js';        
 import emailService from './emailService.js';     
@@ -8,6 +9,9 @@ import AppError from '../utils/appError.js';
 import { failResponse } from '../utils/responseUtil.js';
 import { generateToken, verifyToken } from '../utils/tokenUtils.js';
 import { hashPassword, comparePassword } from '../utils/passwordUtils.js'; 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -39,6 +43,7 @@ const verifyEmail = async (userId) => {
 };
 
 const updateProfile = async (userId, profileData) => {
+    console.log('BABI',profileData);
     const user = await User.findById(userId);
     if (!user) {
         throw new AppError('User tidak ditemukan', httpStatus.NOT_FOUND, 'user_id');
@@ -76,13 +81,11 @@ const resetPassword = async (token, newPassword) => {
 
         const user = await User.findById(decoded.id);
         if (!user) {
-            // throw new Error('User tidak ditemukan');
             throw new AppError('User tidak ditemukan, pastikan token valid dan belum kadaluarsa', httpStatus.NOT_FOUND, 'user_id');
         }
 
         const hashedPassword = await hashPassword(newPassword);
 
-        // Update password
         await User.updatePassword(user.user_id, hashedPassword);
 
         return { message: 'Password berhasil diubah' };
@@ -100,21 +103,26 @@ const updateProfilePicture = async (userId, profilePicture) => {
         throw new AppError('User tidak ditemukan', httpStatus.NOT_FOUND, 'user_id');
     }
 
-    if (user.user_profile && user.user_profile !== null) {
-        try { 
-            const oldFilePath = path.join(__dirname,`../uploads/userprofile`, user.user_profile);
+    if (user.user_profile && typeof user.user_profile === 'string' && user.user_profile.trim() !== '') {
+        try {
+            const oldFilePath = path.join(__dirname, `../uploads/userprofile`, user.user_profile);
+            
             if (fs.existsSync(oldFilePath)) {
                 fs.unlinkSync(oldFilePath);
+            } else {
+                console.log('INFO: Old profile picture does not exist at path:', oldFilePath);
             }
         } catch (error) {
-            console.error('Error saat menghapus file lama:', error);
+            console.error('ERROR: Gagal menghapus file lama:', error.message);
             throw new AppError('Gagal menghapus gambar profil lama', httpStatus.INTERNAL_SERVER_ERROR, 'profile_picture');
         }
+    } else {
+        console.log('INFO: User does not have an existing profile picture or path is invalid.');
     }
 
     const updatedUser = await User.updateProfilePicture(userId, profilePicture);
     return updatedUser;
-}
+};
 
 const updatePassword = async (userId, currentPassword, newPassword) => {
     const user = await User.findById(userId);

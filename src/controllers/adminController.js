@@ -144,9 +144,19 @@ const getCourseById = async (req, res) => {
 const createCourse = async (req, res) => {
     try {
         const courseData = req.body;
-        const newCourse = await adminService.createCourse(courseData);
+
+        console.log(courseData);
+        const formatData = {
+            ...courseData,
+            course_price: parseFloat(courseData.course_price)
+        };
+
+        console.log(formatData);
+
+        const newCourse = await adminService.createCourse(formatData, req.files);
         return successResponse(res, httpStatus.CREATED, 'Kursus berhasil dibuat', newCourse);
     } catch (error) {
+        console.error(error);
         if (error instanceof AppError) {
             return failResponse(res, error.statusCode, error.message);
         }
@@ -156,9 +166,15 @@ const createCourse = async (req, res) => {
 
 const updateCourse = async (req, res) => {
     try {
-        const { id } = req.params;
+        const course_id = parseInt(req.params.id);
         const courseData = req.body;
-        const updatedCourse = await adminService.updateCourse(parseInt(id), courseData);
+
+        const formatData = { ...courseData };
+        if (courseData.course_price !== undefined) {
+            formatData.course_price = parseFloat(courseData.course_price);
+        }
+
+        const updatedCourse = await adminService.updateCourse(course_id, formatData, req.files);
 
         if (!updatedCourse) {
             return failResponse(res, httpStatus.NOT_FOUND, 'Kursus tidak ditemukan atau gagal diperbarui');

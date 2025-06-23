@@ -2,7 +2,10 @@ import express from 'express';
 import ROLES from '../constants/roles.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import roleMiddleware from '../middleware/roleMiddleware.js';
+import validateRequest from '../middleware/validateRequestMiddleware.js';
+import { uploadCourseImages } from '../middleware/uploadCourseMiddleware.js';
 import adminController from '../controllers/adminController.js';
+import { createCourseSchema, updateCourseSchema } from '../validators/courseValidation.js';
 
 const router = express.Router();
 
@@ -34,8 +37,8 @@ router.get('/dashboard/top-users', authMiddleware, roleMiddleware([ROLES.ADMIN])
 // endpoint untuk manajamen course
 router.get('/courses', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getAllCourses);
 router.get('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.getCourseById);
-router.post('/courses', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.createCourse);
-router.put('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.updateCourse);
+router.post('/courses', authMiddleware, roleMiddleware([ROLES.ADMIN]), uploadCourseImages, adminController.createCourse);
+router.put('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]),  uploadCourseImages, adminController.updateCourse);
 router.delete('/courses/:id', authMiddleware, roleMiddleware([ROLES.ADMIN]), adminController.deleteCourse);
 
 // endpoint untuk manajamen module

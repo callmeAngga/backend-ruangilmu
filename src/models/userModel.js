@@ -19,14 +19,13 @@ class User {
         
         if (updates.length === 0) return null;
         
-        const query = `
+        const sqlQuery = `
             UPDATE users 
             SET ${updates.join(', ')}, updated_at = NOW() 
             WHERE user_id = $1 
             RETURNING user_id, nama, email, tanggal_lahir, kelas, created_at, updated_at
         `;
-        
-        const result = await query(query, [userId]);
+        const result = await query(sqlQuery, [userId]);
         return result.rows[0];
     }
 
