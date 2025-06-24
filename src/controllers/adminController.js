@@ -112,8 +112,8 @@ const getAllDashboardData = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
     try {
-        const { page = 1, limit = 6, search = '' } = req.query;
-        const courses = await adminService.getAllCourses(parseInt(page), parseInt(limit), search);
+        const { page = 1, limit = 6, search = '', status = '' } = req.query;
+        const courses = await adminService.getAllCourses(parseInt(page), parseInt(limit), search, status);
         return successResponse(res, httpStatus.OK, 'Daftar kursus berhasil diambil', courses);
     } catch (error) {
         if (error instanceof AppError) {

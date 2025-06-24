@@ -12,7 +12,7 @@ class Course {
     }
 
     static async getAllCourses() {
-        const result = await query('SELECT * FROM courses');
+        const result = await query("SELECT * FROM courses WHERE status = 'published'");
         return result.rows;
     }
 

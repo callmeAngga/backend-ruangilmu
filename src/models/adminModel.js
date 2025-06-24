@@ -216,7 +216,7 @@ class Admin {
         return parseInt(result.rows[0].total);
     }
 
-    static async getAllCourses(limit, offset, search = '') {
+    static async getAllCourses(limit, offset, search = '', status = '') {
         let sqlQuery = `
             SELECT 
                 c.*,
@@ -227,16 +227,30 @@ class Admin {
             LEFT JOIN modules m ON c.course_id = m.course_id
         `;
 
+        const conditions = [];
         const params = [];
+        let paramIndex = 1;
+
         if (search) {
-            sqlQuery += ' WHERE LOWER(c.course_name) LIKE LOWER($1) OR LOWER(c.course_description) LIKE LOWER($1)';
+            conditions.push(`(LOWER(c.course_name) LIKE LOWER($${paramIndex}) OR LOWER(c.course_description) LIKE LOWER($${paramIndex}))`);
             params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        if (status) { 
+            conditions.push(`c.status = $${paramIndex}`);
+            params.push(status);
+            paramIndex++;
+        }
+
+        if (conditions.length > 0) {
+            sqlQuery += ' WHERE ' + conditions.join(' AND ');
         }
 
         sqlQuery += `
             GROUP BY c.course_id
             ORDER BY c.created_at DESC
-            LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
         `;
 
         params.push(limit, offset);
@@ -245,13 +259,26 @@ class Admin {
         return result.rows;
     }
 
-    static async getCoursesCount(search = '') {
-        let sqlQuery = 'SELECT COUNT(*) FROM courses';
+    static async getCoursesCount(search = '', status = '') { 
+        let sqlQuery = 'SELECT COUNT(*) FROM courses c'; 
+        const conditions = [];
         const params = [];
+        let paramIndex = 1;
 
         if (search) {
-            sqlQuery += ' WHERE LOWER(course_name) LIKE LOWER($1) OR LOWER(course_description) LIKE LOWER($1)';
+            conditions.push(`(LOWER(c.course_name) LIKE LOWER($${paramIndex}) OR LOWER(c.course_description) LIKE LOWER($${paramIndex}))`);
             params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        if (status) {
+            conditions.push(`c.status = $${paramIndex}`);
+            params.push(status);
+            paramIndex++;
+        }
+
+        if (conditions.length > 0) {
+            sqlQuery += ' WHERE ' + conditions.join(' AND ');
         }
 
         const result = await query(sqlQuery, params);
@@ -272,7 +299,7 @@ class Admin {
             course_name,
             course_description,
             course_image_profile = 'default-profile.png',
-            course_image_cover = 'default-cover.png', 
+            course_image_cover = 'default-cover.png',
             course_price,
             course_slug,
             status

@@ -168,10 +168,10 @@ const getAllDashboardData = async () => {
     }
 };
 
-const getAllCourses = async (page = 1, limit = 6, search = '') => {
+const getAllCourses = async (page = 1, limit = 6, search = '', status = '') => {
     const offset = (page - 1) * limit;
-    const courses = await Admin.getAllCourses(limit, offset, search);
-    const totalCount = await Admin.getCoursesCount(search);
+    const courses = await Admin.getAllCourses(limit, offset, search, status);
+    const totalCount = await Admin.getCoursesCount(search, status);
 
     return {
         data: courses,
