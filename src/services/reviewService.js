@@ -75,35 +75,35 @@ const analyzeSentiment = async (review_id) => {
 
     // Menggunakan Gradio Client untuk menganalisis sentimen
     // Sudah bisa tetapi sementara saya nonaktifkan untuk menhindari billing yang tidak diinginkan
-    // const client = await getGradioClient("wongfromindo/sentiment-ruangilmu-api");
-    // const sentiment = await client.predict('/predict', {
-    //     text: review.content.toLowerCase(),
-    // });
+    const client = await getGradioClient("wongfromindo/sentiment-ruangilmu-api");
+    const sentiment = await client.predict('/predict', {
+        text: review.content.toLowerCase(),
+    });
 
     // Selama development, kita akan prediksi dengan cara lama
-    let sentiment = 'netral';
-    const text = review.content.toLowerCase();
+    // let sentiment = 'positif';
+    // const text = review.content.toLowerCase();
 
-    const positiveWords = ['bagus', 'baik', 'suka', 'hebat', 'keren', 'mantap', 'memuaskan'];
-    const negativeWords = ['buruk', 'jelek', 'tidak suka', 'kecewa', 'kurang', 'sulit'];
+    // const positiveWords = ['bagus', 'baik', 'suka', 'hebat', 'keren', 'mantap', 'memuaskan'];
+    // const negativeWords = ['buruk', 'jelek', 'tidak suka', 'kecewa', 'kurang', 'sulit'];
 
-    let positiveCount = 0;
-    let negativeCount = 0;
+    // let positiveCount = 0;
+    // let negativeCount = 0;
 
-    positiveWords.forEach(word => {
-        if (text.includes(word)) positiveCount++;
-    });
+    // positiveWords.forEach(word => {
+    //     if (text.includes(word)) positiveCount++;
+    // });
 
-    negativeWords.forEach(word => {
-        if (text.includes(word)) negativeCount++;
-    });
+    // negativeWords.forEach(word => {
+    //     if (text.includes(word)) negativeCount++;
+    // });
 
-    if (positiveCount > negativeCount) sentiment = 'positif';
-    else if (negativeCount > positiveCount) sentiment = 'negatif';
+    // if (positiveCount > negativeCount) sentiment = 'positif';
+    // else if (negativeCount > positiveCount) sentiment = 'negatif';
 
     // Ganti untuk sementara dengan cara lama
-    await Review.updateSentiment(review_id, sentiment);
-    // await Review.updateSentiment(review_id, sentiment.data[0]);
+    // await Review.updateSentiment(review_id, sentiment);
+    await Review.updateSentiment(review_id, sentiment.data[0]);
 
     return sentiment;
 };
